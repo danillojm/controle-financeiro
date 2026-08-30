@@ -5,11 +5,12 @@ Aplicativo pessoal de finanças feito em HTML/CSS/JavaScript puro, preparado par
 ## O que já funciona
 
 - Login por e-mail e senha com Supabase Auth.
-- Dashboard mensal: receitas, gastos próprios, valores da família e saldo.
+- Dashboard mensal: receitas, gastos próprios, valores a receber, valores a pagar e saldo entre pessoas.
 - Cadastro rápido de despesas e receitas.
 - Compras parceladas distribuídas automaticamente pelos meses das faturas.
-- Identificação de quem usou o cartão e quanto essa pessoa deve em cada mês.
-- Marcar parcela como paga/reabrir cobrança.
+- Responsabilidade do lançamento: meu gasto, outra pessoa me deve ou eu devo a outra pessoa.
+- Tela de Dívidas com saldos individuais, valores a receber e valores a pagar.
+- Marcar como pago ou reabrir uma dívida nos dois sentidos.
 - Cadastro de pessoas e cartões.
 - Receita recorrente mensal até dezembro.
 - Histórico e exclusão de lançamentos.
@@ -27,6 +28,10 @@ Aplicativo pessoal de finanças feito em HTML/CSS/JavaScript puro, preparado par
 6. Abra `supabase-config.js` e substitua os dois valores de exemplo.
 
 > A chave `anon` é própria para uso no navegador. A proteção dos dados é feita pelas políticas RLS do `schema.sql`. Nunca coloque a `service_role` no projeto publicado.
+
+### Atualizar um projeto que já existe
+
+Execute o arquivo `supabase/migration_v2.sql` no SQL Editor. A migração adiciona o campo de responsabilidade sem apagar lançamentos; despesas antigas vinculadas a outra pessoa são classificadas como **Outra pessoa me deve** e as demais como **Meu gasto**.
 
 ### Confirmação de e-mail
 

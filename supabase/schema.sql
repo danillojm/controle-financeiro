@@ -37,6 +37,7 @@ create table if not exists public.transactions (
   payment_method text,
   card_id uuid references public.cards(id) on delete set null,
   person_id uuid references public.people(id) on delete set null,
+  responsibility text not null default 'own' check(responsibility in ('own','receivable','payable')),
   amount_total numeric(12,2) not null check(amount_total > 0),
   installment_number int not null default 1 check(installment_number >= 1),
   installments_total int not null default 1 check(installments_total >= 1),
@@ -49,8 +50,41 @@ create table if not exists public.transactions (
   created_at timestamptz not null default now()
 );
 
+-- Migração segura para projetos que já executaram uma versão anterior do schema.
+alter table public.transactions
+  add column if not exists responsibility text;
+
+update public.transactions t
+set responsibility = case
+  when t.kind = 'income' then 'own'
+  when exists (
+    select 1 from public.people p
+    where p.id = t.person_id and p.is_self = false
+  ) then 'receivable'
+  else 'own'
+end
+where responsibility is null;
+
+alter table public.transactions
+  alter column responsibility set default 'own',
+  alter column responsibility set not null;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'transactions_responsibility_check'
+      and conrelid = 'public.transactions'::regclass
+  ) then
+    alter table public.transactions
+      add constraint transactions_responsibility_check
+      check (responsibility in ('own','receivable','payable'));
+  end if;
+end $$;
+
 create index if not exists idx_transactions_user_invoice on public.transactions(user_id, invoice_month);
 create index if not exists idx_transactions_user_person on public.transactions(user_id, person_id);
+create index if not exists idx_transactions_user_responsibility on public.transactions(user_id, responsibility);
 
 alter table public.people enable row level security;
 alter table public.cards enable row level security;
