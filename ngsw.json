@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1788188598899,
+  "timestamp": 1788188823322,
   "index": "/controle-financeiro/index.html",
   "assetGroups": [
     {
@@ -25,7 +25,7 @@
         "/controle-financeiro/index.html",
         "/controle-financeiro/main-4VAWTFIT.js",
         "/controle-financeiro/manifest.webmanifest",
-        "/controle-financeiro/styles-GH2TF32X.css"
+        "/controle-financeiro/styles-D6H5RNDA.css"
       ],
       "patterns": []
     },
@@ -70,10 +70,10 @@
     "/controle-financeiro/icons/icon-512x512.png": "1de182f76f7329dfa8f9fcdd1fdcdd695bea6a99",
     "/controle-financeiro/icons/icon-72x72.png": "aa88a6096bd973be7f6d7a5489bfa6bc2463f8c4",
     "/controle-financeiro/icons/icon-96x96.png": "7fb8f59c30ce2ff12c700321a0b39e14b3dc8f95",
-    "/controle-financeiro/index.html": "efe76948de8ac4f097bd46601af860ec43804901",
+    "/controle-financeiro/index.html": "cffdb804f7404f367beeffd51ae1fc3751ceec4b",
     "/controle-financeiro/main-4VAWTFIT.js": "56cb9c2ff637e8891bb7293f5d4f085c66fc445e",
     "/controle-financeiro/manifest.webmanifest": "4bc616275d9c8ceb3d97806e125ffa6eaad9db89",
-    "/controle-financeiro/styles-GH2TF32X.css": "cdfbdb74251e2fed41be5dd6f2738d76ee024cd3"
+    "/controle-financeiro/styles-D6H5RNDA.css": "ba0b93c14948eaf42c25e6db0adcb17e82c9a816"
   },
   "navigationUrls": [
     {
