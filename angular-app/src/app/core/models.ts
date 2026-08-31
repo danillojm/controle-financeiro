@@ -119,6 +119,19 @@ export const parseBrazilianCurrency = (raw: string | number | null | undefined) 
   const parsed = Number(`${negative ? '-' : ''}${normalized}`);
   return Number.isFinite(parsed) ? parsed : null;
 };
+export const formatBrazilianCurrencyTyping = (raw: string) => {
+  const negative = raw.trim().startsWith('-');
+  const clean = raw.replace(/[^\d,]/g, '');
+  const [integerRaw = '', decimalRaw] = clean.split(',');
+  const integerDigits = integerRaw.replace(/^0+(?=\d)/, '') || '0';
+  const grouped = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(
+    Number(integerDigits),
+  );
+  const decimals = decimalRaw === undefined ? undefined : decimalRaw.slice(0, 2);
+  const display = `${negative ? '-' : ''}${grouped}${decimals === undefined ? '' : `,${decimals}`}`;
+  const value = Number(`${negative ? '-' : ''}${integerDigits}.${decimals || '0'}`);
+  return { display, value: Number.isFinite(value) ? value : null };
+};
 export const today = () => new Date().toLocaleDateString('en-CA');
 export const currentMonth = () => today().slice(0, 7);
 export const monthStart = (month: string) => `${month.slice(0, 7)}-01`;

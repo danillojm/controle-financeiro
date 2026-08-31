@@ -1,6 +1,7 @@
 import {
   addMonths,
   dueDateFor,
+  formatBrazilianCurrencyTyping,
   invoiceMonthFor,
   parseBrazilianCurrency,
   splitAmount,
@@ -21,5 +22,10 @@ describe('finance helpers', () => {
     expect(parseBrazilianCurrency('4.400,50')).toBe(4400.5);
     expect(parseBrazilianCurrency('4,40')).toBe(4.4);
     expect(parseBrazilianCurrency('4400')).toBe(4400);
+  });
+  it('formata milhares automaticamente durante a digitação', () => {
+    expect(formatBrazilianCurrencyTyping('4400')).toEqual({ display: '4.400', value: 4400 });
+    expect(formatBrazilianCurrencyTyping('4.4000')).toEqual({ display: '44.000', value: 44000 });
+    expect(formatBrazilianCurrencyTyping('4400,5')).toEqual({ display: '4.400,5', value: 4400.5 });
   });
 });

@@ -1,6 +1,10 @@
 import { Directive, ElementRef, HostListener, forwardRef, inject } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { currencyInput, parseBrazilianCurrency } from '../core/models';
+import {
+  currencyInput,
+  formatBrazilianCurrencyTyping,
+  parseBrazilianCurrency,
+} from '../core/models';
 
 @Directive({
   selector: 'input[appCurrency]',
@@ -22,6 +26,7 @@ export class CurrencyInputDirective implements ControlValueAccessor {
     this.element.type = 'text';
     this.element.inputMode = 'decimal';
     this.element.autocomplete = 'off';
+    this.element.placeholder ||= '0,00';
   }
   writeValue(value: number | null): void {
     this.element.value = value == null ? '' : currencyInput.format(value);
@@ -36,7 +41,10 @@ export class CurrencyInputDirective implements ControlValueAccessor {
     this.element.disabled = disabled;
   }
   @HostListener('input') input() {
-    this.onChange(parseBrazilianCurrency(this.element.value));
+    const { display, value } = formatBrazilianCurrencyTyping(this.element.value);
+    this.element.value = display;
+    this.element.setSelectionRange(display.length, display.length);
+    this.onChange(value);
   }
   @HostListener('blur') blur() {
     const value = parseBrazilianCurrency(this.element.value);
