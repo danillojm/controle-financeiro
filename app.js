@@ -370,7 +370,20 @@
   $('#exportCsvBtn').onclick = () => exportCsv(false); $('#exportCsvBtn2').onclick = () => exportCsv(true);
   let deferredPrompt = null; window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); deferredPrompt = event; $('#installBtn').hidden = false; });
   $('#installBtn').onclick = async () => { if (!deferredPrompt) return toast('No iPhone/iPad: Safari → Compartilhar → Adicionar à Tela de Início.'); deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; $('#installBtn').hidden = true; };
-  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.warn));
+  if ('serviceWorker' in navigator) window.addEventListener('load', async () => {
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+    try {
+      const registration = await navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
+      await registration.update();
+    } catch (error) {
+      console.warn(error);
+    }
+  });
   sb.auth.onAuthStateChange(async (_event, session) => {
     if (!session) { state.user = null; show('authScreen'); return; } state.user = session.user; show('mainScreen');
     try { await ensureSeed(); setFormDefaults(); await loadData(); cancelEdit(); nav('dashboard'); } catch (error) { setLoading(false); toast(humanError(error), 'error'); }
