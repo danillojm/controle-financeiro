@@ -59,8 +59,20 @@
       sb.from('people').select('id').eq('user_id', userId).eq('is_self', true).limit(1), sb.from('categories').select('id').eq('user_id', userId).limit(1)
     ]);
     if (selfResult.error || categoryResult.error) throw selfResult.error || categoryResult.error;
-    if (!selfResult.data?.length) { const { error } = await sb.from('people').insert({ user_id: userId, name: 'Eu', is_self: true }); if (error) throw error; }
-    if (!categoryResult.data?.length) { const { error } = await sb.from('categories').insert(defaultCategories.map(name => ({ user_id: userId, name }))); if (error) throw error; }
+    if (!selfResult.data?.length) {
+      const { error } = await sb.from('people').upsert(
+        { user_id: userId, name: 'Eu', is_self: true },
+        { onConflict: 'user_id,name' }
+      );
+      if (error) throw error;
+    }
+    if (!categoryResult.data?.length) {
+      const { error } = await sb.from('categories').upsert(
+        defaultCategories.map(name => ({ user_id: userId, name })),
+        { onConflict: 'user_id,name', ignoreDuplicates: true }
+      );
+      if (error) throw error;
+    }
   }
   async function fetchAll(table, select, orderColumn) {
     const result = [], batchSize = 1000;
