@@ -40,7 +40,8 @@
           [(ngModel)]="form.description"
           required /></label
       ><label
-        >Valor<input
+        >{{ isFixedDebt ? 'Valor mensal' : 'Valor'
+        }}<input
           name="amount"
           appCurrency
           inputmode="decimal"
@@ -92,6 +93,13 @@
               }
             </select></label
           >
+          <label class="check-option full-field"
+            ><input type="checkbox" name="monthlyDebt" [(ngModel)]="form.monthlyDebt" />
+            <span
+              ><strong>Dívida de valor fixo mensal</strong
+              ><small>Repete o mesmo valor em todos os meses.</small></span
+            ></label
+          >
         }
       }
       @if (showCard) {
@@ -115,14 +123,26 @@
         >
       }
       @if (form.kind === 'expense') {
+        @if (isFixedDebt) {
+          <label
+            >Repetir por quantos meses?<input
+              name="debtMonths"
+              type="number"
+              min="1"
+              max="120"
+              [(ngModel)]="form.debtMonths"
+          /></label>
+        } @else {
+          <label
+            >Parcelas<input
+              name="installments"
+              type="number"
+              min="1"
+              max="120"
+              [(ngModel)]="form.installments"
+          /></label>
+        }
         <label
-          >Parcelas<input
-            name="installments"
-            type="number"
-            min="1"
-            max="120"
-            [(ngModel)]="form.installments" /></label
-        ><label
           >Primeira fatura/mês<input
             name="month"
             type="month"

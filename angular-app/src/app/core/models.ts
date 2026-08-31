@@ -48,6 +48,7 @@ export interface Transaction {
   invoice_month: string;
   due_date?: string | null;
   series_id: string;
+  recurrence_type?: 'installment' | 'monthly';
   reimbursement_status?: string | null;
   amount_received: number;
   notes?: string | null;

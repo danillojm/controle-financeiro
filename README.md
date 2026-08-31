@@ -52,6 +52,7 @@ Execute, nesta ordem, os arquivos abaixo no SQL Editor:
 2. `supabase/migration_v3.sql` — adiciona vencimentos, séries, pagamentos parciais, orçamentos e validações.
 3. `supabase/migration_v4.sql` — adiciona contas, transferências, faturas, arquivamento, preferências e diagnóstico.
 4. `supabase/migration_v5.sql` — corrige os gatilhos de contas, transferências, quitações e faturas.
+5. `supabase/migration_v6.sql` — adiciona dívidas mensais de valor fixo e atualização consistente das séries.
 
 As migrações preservam os lançamentos existentes. Pagamentos registrados na versão anterior são importados para o novo histórico de quitações.
 

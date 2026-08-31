@@ -8,6 +8,9 @@ export class FeedbackService {
     if (/record "new" has no field|from_account_id/i.test(message)) {
       message = 'O banco precisa da correção v5. Execute supabase/migration_v5.sql no SQL Editor.';
     }
+    if (/recurrence_type|update_transaction_series_v6/i.test(message)) {
+      message = 'O banco precisa da versão 6. Execute supabase/migration_v6.sql no SQL Editor.';
+    }
     this.message.set(message);
     this.type.set(type);
     if ('vibrate' in navigator) navigator.vibrate(type === 'error' ? [30, 40, 30] : 18);

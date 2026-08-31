@@ -40,6 +40,8 @@ export class EntryPage {
     person_id: '',
     installments: 1,
     recurring: 1,
+    monthlyDebt: false,
+    debtMonths: 12,
     invoice_month: today().slice(0, 7),
     due_date: '',
     notes: '',
@@ -69,10 +71,13 @@ export class EntryPage {
           person_id: x.person_id || '',
           installments: x.installments_total,
           recurring: x.installments_total,
+          monthlyDebt: x.kind === 'expense' && x.recurrence_type === 'monthly',
+          debtMonths: x.installments_total,
           invoice_month: x.invoice_month.slice(0, 7),
           due_date: x.due_date || '',
           notes: x.notes || '',
         };
+        this.updateSeries = x.recurrence_type === 'monthly' && x.installments_total > 1;
       }
     }
   }
@@ -99,6 +104,11 @@ export class EntryPage {
       this.form.payment_method === 'Crédito'
     );
   }
+  get isFixedDebt() {
+    return (
+      this.form.kind === 'expense' && this.form.responsibility !== 'own' && this.form.monthlyDebt
+    );
+  }
   async save() {
     if (!this.form.description.trim() || !this.form.amount || !this.form.purchase_date) {
       navigator.vibrate?.([30, 40, 30]);
@@ -117,7 +127,7 @@ export class EntryPage {
       if (this.editingId) {
         const original = this.store.transactions().find((x) => x.id === this.editingId)!;
         if (this.updateSeries) {
-          const { data, error } = await this.sb.rpc('update_transaction_series_v4', {
+          const { data, error } = await this.sb.rpc('update_transaction_series_v6', {
             p_series_id: original.series_id,
             p_description: this.form.description.trim(),
             p_category_id: this.form.category_id || null,
@@ -131,6 +141,8 @@ export class EntryPage {
             p_due_day: this.form.due_date ? Number(this.form.due_date.slice(8, 10)) : null,
             p_notes: this.form.notes || null,
             p_account_id: this.showAccount ? this.form.account_id || null : null,
+            p_recurrence_type:
+              original.kind === 'income' || this.isFixedDebt ? 'monthly' : 'installment',
           });
           if (error) throw error;
           count = Number(data || 1);
@@ -151,19 +163,24 @@ export class EntryPage {
               invoice_month: monthStart(this.form.invoice_month),
               due_date: this.form.due_date || null,
               notes: this.form.notes || null,
+              recurrence_type: this.isFixedDebt
+                ? 'monthly'
+                : original.recurrence_type || 'installment',
             })
             .eq('id', this.editingId);
           if (error) throw error;
         }
       } else {
+        const monthly = this.form.kind === 'income' || this.isFixedDebt;
         count =
           this.form.kind === 'income'
             ? Math.max(1, this.form.recurring)
-            : Math.max(1, this.form.installments);
-        const amounts =
-            this.form.kind === 'income'
-              ? Array(count).fill(this.form.amount)
-              : splitAmount(this.form.amount, count),
+            : this.isFixedDebt
+              ? Math.max(1, this.form.debtMonths)
+              : Math.max(1, this.form.installments);
+        const amounts = monthly
+            ? Array(count).fill(this.form.amount)
+            : splitAmount(this.form.amount, count),
           series_id = crypto.randomUUID(),
           rows = amounts.map((amount, index) => {
             const month = addMonths(
@@ -187,11 +204,13 @@ export class EntryPage {
               installment_number: index + 1,
               installments_total: count,
               installment_amount: amount,
-              purchase_date:
-                this.form.kind === 'income' && index ? monthStart(month) : this.form.purchase_date,
+              purchase_date: monthly && index ? monthStart(month) : this.form.purchase_date,
               invoice_month: monthStart(month),
-              due_date: index === 0 ? this.form.due_date || null : null,
+              due_date: this.form.due_date
+                ? dueDateFor(month, Number(this.form.due_date.slice(8, 10)))
+                : null,
               series_id,
+              recurrence_type: monthly ? 'monthly' : 'installment',
               reimbursement_status: responsibility === 'own' ? null : 'pending',
               amount_received: 0,
               notes: this.form.notes || null,
@@ -229,6 +248,8 @@ export class EntryPage {
       person_id: '',
       installments: 1,
       recurring: 1,
+      monthlyDebt: false,
+      debtMonths: 12,
       invoice_month: today().slice(0, 7),
       due_date: '',
       notes: '',
