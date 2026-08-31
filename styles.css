@@ -15,6 +15,7 @@ label{display:grid;gap:6px;font-size:13px;font-weight:650;color:#475467;text-ali
 input,select,textarea{width:100%;border:1px solid #d0d5dd;border-radius:12px;padding:12px 13px;background:#fff;color:var(--text);outline:none}
 input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(15,118,110,.12)}
 .btn{border:0;border-radius:12px;padding:11px 14px;font-weight:750;cursor:pointer}
+.btn,.icon-btn,.nav-btn,.seg{transition:transform .08s ease,filter .15s ease,opacity .15s ease}.btn:active,.icon-btn:active,.nav-btn:active,.seg:active{transform:scale(.96);filter:brightness(.94)}
 .btn.primary{background:var(--primary);color:#fff}
 .btn.primary:hover{background:var(--primary2)}
 .btn.secondary{background:#eef2f6;color:#344054}
@@ -97,3 +98,4 @@ tr:last-child td{border-bottom:0}
 @media(max-width:520px){.nav-btn{font-size:9px}.nav-btn span{font-size:17px}.bar-row{grid-template-columns:72px 1fr auto}.person-register{align-items:flex-start}.summary-row{align-items:flex-start}.summary-row strong{white-space:normal;text-align:right}}
 .card-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.card-heading .card-title{margin-bottom:0}
 #dueAlertsCard{margin-top:14px}
+.link-btn{background:transparent;color:var(--primary);padding:6px}.register-list{display:grid;gap:8px;margin-top:14px}.register-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#f8fafc}.register-row>span:first-child{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.register-row small{width:100%;padding-left:21px;color:var(--muted)}.register-row i{width:12px;height:12px;border-radius:50%;display:inline-block}.row-actions{display:flex;gap:4px}.row-actions button,.register-row button{border:0;background:#eef2f6;border-radius:8px;padding:6px 9px;cursor:pointer}.archived{opacity:.58}.file-btn{display:inline-block;margin-top:10px;width:auto}.wide-modal{width:min(900px,calc(100% - 24px))}.summary-row>span:last-child{display:grid;justify-items:end;gap:6px}.summary-row>span:last-child .btn{width:max-content}

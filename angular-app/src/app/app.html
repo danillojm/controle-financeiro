@@ -1,0 +1,44 @@
+@if (!ready()) {
+  <div class="center-screen">Carregando...</div>
+} @else if (!authenticated()) {
+  <main class="center-screen">
+    <form class="card auth" (ngSubmit)="login()">
+      <div class="brand">Meu Controle</div>
+      <h1>Finanças organizadas</h1>
+      <label>E-mail<input type="email" name="email" [(ngModel)]="email" required /></label
+      ><label
+        >Senha<input
+          type="password"
+          name="password"
+          [(ngModel)]="password"
+          minlength="6"
+          required /></label
+      ><button class="btn primary">Entrar</button
+      ><button class="btn secondary" type="button" (click)="signup()">Criar conta</button
+      ><button class="btn link" type="button" (click)="recover()">Esqueci minha senha</button>
+      <p>{{ authMessage() }}</p>
+    </form>
+  </main>
+} @else {
+  <div class="app-shell">
+    <header>
+      <a routerLink="/inicio" class="brand">Meu Controle</a
+      ><button class="btn secondary" (click)="logout()">Sair</button>
+    </header>
+    <main><router-outlet /></main>
+    <nav>
+      <a routerLink="/inicio" routerLinkActive="active">⌂<small>Início</small></a
+      ><a routerLink="/lancamento" routerLinkActive="active">＋<small>Lançar</small></a
+      ><a routerLink="/dividas" routerLinkActive="active">⇄<small>Dívidas</small></a
+      ><a routerLink="/historico" routerLinkActive="active">◷<small>Histórico</small></a
+      ><a routerLink="/relatorios" routerLinkActive="active">▥<small>Relatórios</small></a
+      ><a routerLink="/cadastros" routerLinkActive="active">⚙<small>Cadastros</small></a>
+    </nav>
+  </div>
+}
+@if (store.loading()) {
+  <div class="loading">Atualizando seus dados...</div>
+}
+@if (feedback.message()) {
+  <div class="toast" [class.error]="feedback.type() === 'error'">{{ feedback.message() }}</div>
+}

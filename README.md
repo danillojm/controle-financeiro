@@ -1,6 +1,8 @@
 # Meu Controle Financeiro — PWA
 
-Aplicativo pessoal de finanças feito em HTML/CSS/JavaScript puro, preparado para **GitHub Pages + Supabase**. Não precisa de Node, npm, React ou processo de build.
+Aplicativo pessoal de finanças em **Angular 21 + Supabase**, publicado no GitHub Pages. O código-fonte está em [`angular-app/`](angular-app/README.md); os arquivos gerados na raiz são o build servido pelo Pages.
+
+Os antigos arquivos `app.js`, `styles.css` e `finance-core.js` permanecem apenas como referência da versão anterior e não são carregados pelo novo `index.html`.
 
 ## O que já funciona
 
@@ -16,6 +18,14 @@ Aplicativo pessoal de finanças feito em HTML/CSS/JavaScript puro, preparado par
 - Cálculo automático da fatura e vencimento pelo fechamento do cartão.
 - Alertas de vencimentos próximos e atrasados.
 - Orçamentos mensais por categoria e relatórios visuais.
+- Contas, saldos, transferências e pagamento de faturas de cartão.
+- Categorias personalizáveis com cor, ícone, uso e arquivamento.
+- Pessoas, cartões, categorias e contas editáveis e arquiváveis.
+- Busca e filtros avançados no histórico.
+- Exclusão de uma parcela, das próximas ou da série completa.
+- Backup completo em JSON e restauração com prévia, além de importação CSV.
+- Recuperação de senha e diagnóstico privado de erros.
+- Alertas em segundo plano quando o navegador oferece Periodic Background Sync; nos demais, os alertas são atualizados ao abrir o app.
 - Cadastro de pessoas e cartões.
 - Receitas recorrentes com duração configurável.
 - Histórico paginado, edição e exclusão de lançamentos.
@@ -40,6 +50,7 @@ Execute, nesta ordem, os arquivos abaixo no SQL Editor:
 
 1. `supabase/migration_v2.sql` — adiciona as responsabilidades.
 2. `supabase/migration_v3.sql` — adiciona vencimentos, séries, pagamentos parciais, orçamentos e validações.
+3. `supabase/migration_v4.sql` — adiciona contas, transferências, faturas, arquivamento, preferências e diagnóstico.
 
 As migrações preservam os lançamentos existentes. Pagamentos registrados na versão anterior são importados para o novo histórico de quitações.
 
@@ -76,11 +87,9 @@ No Mac, Chrome/Edge podem oferecer a opção de instalar o app. No Safari, o sit
 
 ## Estrutura
 
-- `index.html` — interface.
-- `styles.css` — visual responsivo.
-- `app.js` — lógica do aplicativo.
-- `finance-core.js` — cálculos financeiros puros e testáveis.
-- `supabase-config.js` — URL e chave pública do Supabase.
+- `angular-app/` — código-fonte Angular, testes e configuração PWA.
+- `index.html`, `main-*.js`, `chunk-*.js` e `styles-*.css` — build publicado.
+- `app.js`, `styles.css` e `finance-core.js` — referência da versão anterior.
 - `manifest.webmanifest` — configuração PWA.
 - `sw.js` — service worker/cache básico.
 - `icons/` — ícones do aplicativo.
@@ -89,11 +98,13 @@ No Mac, Chrome/Edge podem oferecer a opção de instalar o app. No Safari, o sit
 - `tests/` — testes de cálculos e do contrato entre JavaScript e HTML.
 - `.nojekyll` — evita processamento desnecessário pelo GitHub Pages.
 
-## Testes locais
+## Testes e publicação
 
 Com Node.js instalado, execute:
 
 ```bash
-node tests/finance-core.test.js
-node tests/dom-contract.test.js
+cd angular-app
+npm install
+npm test -- --watch=false
+npm run deploy:pages
 ```

@@ -1,0 +1,143 @@
+<section class="stack">
+  <div>
+    <h1>{{ editingId ? 'Editar lançamento' : 'Novo lançamento' }}</h1>
+    <p class="muted">Registre gastos, receitas e valores entre pessoas.</p>
+  </div>
+  <form class="card stack" (ngSubmit)="save()">
+    @if (editingId) {
+      <div class="card">
+        Você está editando um lançamento.
+        <label
+          ><input type="checkbox" name="series" [(ngModel)]="updateSeries" /> Atualizar toda a
+          série</label
+        >
+      </div>
+    }
+    <div class="actions">
+      <button
+        type="button"
+        class="btn"
+        [class.primary]="form.kind === 'expense'"
+        [disabled]="!!editingId"
+        (click)="setKind('expense')"
+      >
+        Despesa</button
+      ><button
+        type="button"
+        class="btn"
+        [class.primary]="form.kind === 'income'"
+        [disabled]="!!editingId"
+        (click)="setKind('income')"
+      >
+        Receita
+      </button>
+    </div>
+    <div class="form-grid">
+      <label
+        >Descrição<input
+          id="description"
+          name="description"
+          [(ngModel)]="form.description"
+          required /></label
+      ><label
+        >Valor<input
+          name="amount"
+          type="number"
+          min="0.01"
+          step="0.01"
+          [(ngModel)]="form.amount"
+          required /></label
+      ><label>Data<input name="date" type="date" [(ngModel)]="form.purchase_date" required /></label
+      ><label
+        >Categoria<select name="category" [(ngModel)]="form.category_id">
+          <option value="">Sem categoria</option>
+          @for (x of categories(); track x.id) {
+            <option [value]="x.id">{{ x.icon }} {{ x.name }}</option>
+          }
+        </select></label
+      ><label
+        >Forma<select name="method" [(ngModel)]="form.payment_method">
+          <option>Crédito</option>
+          <option>Débito</option>
+          <option>Pix</option>
+          <option>Dinheiro</option>
+          <option>Boleto</option>
+          <option>Transferência</option>
+        </select></label
+      >
+      @if (form.kind === 'expense') {
+        <label
+          >Responsabilidade<select name="responsibility" [(ngModel)]="form.responsibility">
+            <option value="own">Meu gasto</option>
+            <option value="receivable">Outra pessoa me deve</option>
+            <option value="payable">Eu devo a outra pessoa</option>
+          </select></label
+        >
+        @if (form.responsibility !== 'own') {
+          <label
+            >{{ form.responsibility === 'payable' ? 'Para quem eu devo?' : 'Quem me deve?'
+            }}<select name="person" [(ngModel)]="form.person_id">
+              <option value="">Selecione</option>
+              @for (x of store.activePeople(); track x.id) {
+                <option [value]="x.id">{{ x.name }}</option>
+              }
+            </select></label
+          >
+        }
+      }
+      @if (showCard) {
+        <label
+          >Cartão<select name="card" [(ngModel)]="form.card_id">
+            <option value="">Sem cartão</option>
+            @for (x of store.activeCards(); track x.id) {
+              <option [value]="x.id">{{ x.name }}</option>
+            }
+          </select></label
+        >
+      }
+      @if (showAccount) {
+        <label
+          >Conta<select name="account" [(ngModel)]="form.account_id">
+            <option value="">Sem conta</option>
+            @for (x of store.activeAccounts(); track x.id) {
+              <option [value]="x.id">{{ x.name }}</option>
+            }
+          </select></label
+        >
+      }
+      @if (form.kind === 'expense') {
+        <label
+          >Parcelas<input
+            name="installments"
+            type="number"
+            min="1"
+            max="120"
+            [(ngModel)]="form.installments" /></label
+        ><label
+          >Primeira fatura/mês<input
+            name="month"
+            type="month"
+            [(ngModel)]="form.invoice_month" /></label
+        ><label>Vencimento<input name="due" type="date" [(ngModel)]="form.due_date" /></label>
+      } @else {
+        <label
+          >Repetir por quantos meses?<input
+            name="recurring"
+            type="number"
+            min="1"
+            max="120"
+            [(ngModel)]="form.recurring"
+        /></label>
+      }
+      <label>Observação<textarea name="notes" [(ngModel)]="form.notes"></textarea></label>
+    </div>
+    <div class="actions">
+      <button class="btn primary" [disabled]="saving">
+        {{ saving ? 'Salvando...' : 'Salvar lançamento' }}</button
+      ><button class="btn secondary" type="button" (click)="reset()">Limpar</button>
+    </div>
+    <p [class.negative]="message.includes('Preencha') || message.includes('Selecione')">
+      {{ message }}
+    </p>
+  </form>
+</section>

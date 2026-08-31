@@ -1,0 +1,147 @@
+<section class="stack">
+  <div class="toolbar">
+    <div>
+      <h1>Dívidas</h1>
+      <p class="muted">Valores a receber e a pagar.</p>
+    </div>
+    <div class="actions">
+      <input type="month" [(ngModel)]="month" /><select [(ngModel)]="person">
+        <option value="">Todas as pessoas</option>
+        @for (x of store.activePeople(); track x.id) {
+          <option [value]="x.id">{{ x.name }}</option>
+        }
+      </select>
+    </div>
+  </div>
+  <div class="kpis">
+    <div class="card kpi">
+      A receber<strong>{{ fmt(receive) }}</strong>
+    </div>
+    <div class="card kpi">
+      A pagar<strong>{{ fmt(pay) }}</strong>
+    </div>
+    <div class="card kpi">
+      Saldo<strong [class.negative]="receive - pay < 0">{{ fmt(receive - pay) }}</strong>
+    </div>
+  </div>
+  <div class="card table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Pessoa</th>
+          <th>Descrição</th>
+          <th>Sentido</th>
+          <th>Valor</th>
+          <th>Restante</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (x of rows; track x.id) {
+          <tr>
+            <td>{{ name(x) }}</td>
+            <td>{{ x.description }}</td>
+            <td>{{ x.responsibility === 'payable' ? 'Eu devo' : 'Me deve' }}</td>
+            <td>{{ fmt(x.installment_amount) }}</td>
+            <td>{{ fmt(store.remaining(x)) }}</td>
+            <td class="actions">
+              @if (store.remaining(x) > 0.009) {
+                <button class="btn primary" (click)="open(x)">Registrar pagamento</button>
+              } @else {
+                <button class="btn secondary" (click)="reopen(x)">Reabrir</button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty">Nenhuma dívida neste mês.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (selected) {
+    <form class="card stack" (ngSubmit)="settle()">
+      <h2>
+        {{
+          selected.responsibility === 'payable'
+            ? 'Registrar valor pago'
+            : 'Registrar valor recebido'
+        }}
+      </h2>
+      <p>{{ selected.description }} · restante {{ fmt(store.remaining(selected)) }}</p>
+      <div class="form-grid">
+        <label
+          >Valor<input
+            type="number"
+            name="amount"
+            min=".01"
+            step=".01"
+            [(ngModel)]="amount" /></label
+        ><label
+          >Conta<select name="account" [(ngModel)]="account">
+            <option value="">Não informar</option>
+            @for (x of store.activeAccounts(); track x.id) {
+              <option [value]="x.id">{{ x.name }}</option>
+            }
+          </select></label
+        ><label>Data<input type="date" name="date" [(ngModel)]="date" /></label
+        ><label>Observação<input name="notes" [(ngModel)]="notes" /></label>
+      </div>
+      <div class="actions">
+        <button class="btn primary">Confirmar</button
+        ><button type="button" class="btn secondary" (click)="selected = undefined">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  }
+</section>
+<div class="card stack">
+  <h2>Faturas dos cartões</h2>
+  @for (x of invoices; track x.card.id) {
+    <div class="toolbar">
+      <span
+        ><strong>{{ x.card.name }}</strong
+        ><br /><small>Total {{ fmt(x.total) }} · pago {{ fmt(x.paid) }}</small></span
+      >
+      <div class="actions">
+        <strong>{{ x.remaining > 0.009 ? fmt(x.remaining) + ' pendente' : 'Fatura paga' }}</strong>
+        @if (x.remaining > 0.009) {
+          <button class="btn primary" (click)="openInvoice(x.card.id, x.remaining)">Pagar</button>
+        }
+        @if (x.paid > 0.009) {
+          <button class="btn secondary" (click)="reopenInvoice(x.card.id)">Reabrir</button>
+        }
+      </div>
+    </div>
+  } @empty {
+    <p class="empty">Nenhuma fatura neste mês.</p>
+  }
+</div>
+@if (invoiceCard) {
+  <form class="card stack" (ngSubmit)="payInvoice()">
+    <h2>Pagamento da fatura</h2>
+    <div class="form-grid">
+      <label
+        >Valor<input
+          name="invoiceAmount"
+          type="number"
+          min=".01"
+          step=".01"
+          [(ngModel)]="invoiceAmount" /></label
+      ><label
+        >Conta<select name="invoiceAccount" [(ngModel)]="invoiceAccount">
+          <option value="">Não informar</option>
+          @for (x of store.activeAccounts(); track x.id) {
+            <option [value]="x.id">{{ x.name }}</option>
+          }
+        </select></label
+      >
+    </div>
+    <div class="actions">
+      <button class="btn primary">Confirmar</button
+      ><button type="button" class="btn secondary" (click)="invoiceCard = ''">Cancelar</button>
+    </div>
+  </form>
+}

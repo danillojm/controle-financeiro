@@ -1,0 +1,111 @@
+export type Kind = 'expense' | 'income';
+export type Responsibility = 'own' | 'receivable' | 'payable';
+export interface Person {
+  id: string;
+  name: string;
+  is_self: boolean;
+  archived_at?: string | null;
+}
+export interface Card {
+  id: string;
+  name: string;
+  closing_day?: number | null;
+  due_day?: number | null;
+  archived_at?: string | null;
+}
+export interface Category {
+  id: string;
+  name: string;
+  kind: Kind | 'both';
+  color: string;
+  icon: string;
+  archived_at?: string | null;
+}
+export interface Account {
+  id: string;
+  name: string;
+  type: string;
+  initial_balance: number;
+  color: string;
+  archived_at?: string | null;
+}
+export interface Transaction {
+  id: string;
+  user_id: string;
+  kind: Kind;
+  description: string;
+  category_id?: string | null;
+  payment_method: string;
+  card_id?: string | null;
+  account_id?: string | null;
+  person_id?: string | null;
+  responsibility: Responsibility;
+  amount_total: number;
+  installment_number: number;
+  installments_total: number;
+  installment_amount: number;
+  purchase_date: string;
+  invoice_month: string;
+  due_date?: string | null;
+  series_id: string;
+  reimbursement_status?: string | null;
+  amount_received: number;
+  notes?: string | null;
+  people?: Pick<Person, 'name' | 'is_self'> | null;
+  cards?: Pick<Card, 'name'> | null;
+  accounts?: Pick<Account, 'name'> | null;
+}
+export interface Settlement {
+  id: string;
+  transaction_id: string;
+  account_id?: string | null;
+  direction: 'received' | 'paid';
+  amount: number;
+  settled_at: string;
+  notes?: string | null;
+  source?: string;
+}
+export interface Transfer {
+  id: string;
+  from_account_id: string;
+  to_account_id: string;
+  amount: number;
+  transfer_date: string;
+  description?: string | null;
+}
+export interface InvoicePayment {
+  id: string;
+  card_id: string;
+  account_id?: string | null;
+  invoice_month: string;
+  amount: number;
+  paid_at: string;
+  notes?: string | null;
+}
+export interface Budget {
+  id: string;
+  category_id: string;
+  month: string;
+  amount: number;
+}
+export interface AppError {
+  id: string;
+  context?: string;
+  message: string;
+  created_at: string;
+}
+export const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+export const today = () => new Date().toLocaleDateString('en-CA');
+export const currentMonth = () => today().slice(0, 7);
+export const monthStart = (month: string) => `${month.slice(0, 7)}-01`;
+export const addMonths = (month: string, count: number) => {
+  const [year, value] = month.split('-').map(Number),
+    date = new Date(year, value - 1 + count, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+};
+export const splitAmount = (amount: number, count: number) => {
+  const cents = Math.round(amount * 100),
+    base = Math.floor(cents / count),
+    remainder = cents % count;
+  return Array.from({ length: count }, (_, index) => (base + (index < remainder ? 1 : 0)) / 100);
+};

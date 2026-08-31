@@ -1,0 +1,207 @@
+<section class="stack">
+  <div>
+    <h1>Cadastros</h1>
+    <p class="muted">Pessoas, cartões, categorias, contas e transferências.</p>
+  </div>
+  <div class="grid">
+    <form class="card stack" (ngSubmit)="addPerson()">
+      <h2>Pessoas</h2>
+      <input name="person" [(ngModel)]="person" placeholder="Nome" /><button class="btn primary">
+        Adicionar
+      </button>
+      @for (x of store.people(); track x.id) {
+        <div class="toolbar">
+          <span
+            >{{ x.name }}
+            @if (x.is_self) {
+              <small>(você)</small>
+            }
+          </span>
+          @if (!x.is_self) {
+            <div class="actions">
+              <button type="button" class="btn secondary" (click)="rename('people', x.id, x.name)">
+                Editar</button
+              ><button
+                type="button"
+                class="btn secondary"
+                (click)="archive('people', x.id, x.archived_at)"
+              >
+                {{ x.archived_at ? 'Reativar' : 'Arquivar' }}
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </form>
+    <form class="card stack" (ngSubmit)="addCard()">
+      <h2>Cartões</h2>
+      <input name="card" [(ngModel)]="card" placeholder="Nome" />
+      <div class="form-grid">
+        <input
+          name="closing"
+          type="number"
+          min="1"
+          max="31"
+          [(ngModel)]="closing"
+          placeholder="Fechamento"
+        /><input
+          name="due"
+          type="number"
+          min="1"
+          max="31"
+          [(ngModel)]="due"
+          placeholder="Vencimento"
+        />
+      </div>
+      <button class="btn primary">Adicionar</button>
+      @for (x of store.cards(); track x.id) {
+        <div class="toolbar">
+          <span>{{ x.name }}</span>
+          <div class="actions">
+            <button type="button" class="btn secondary" (click)="rename('cards', x.id, x.name)">
+              Editar</button
+            ><button
+              type="button"
+              class="btn secondary"
+              (click)="archive('cards', x.id, x.archived_at)"
+            >
+              {{ x.archived_at ? 'Reativar' : 'Arquivar' }}
+            </button>
+          </div>
+        </div>
+      }
+    </form>
+  </div>
+  <div class="grid">
+    <form class="card stack" (ngSubmit)="addCategory()">
+      <h2>Categorias</h2>
+      <input name="category" [(ngModel)]="category" placeholder="Nome" />
+      <div class="form-grid">
+        <select name="kind" [(ngModel)]="categoryKind">
+          <option value="both">Receitas e despesas</option>
+          <option value="expense">Despesas</option>
+          <option value="income">Receitas</option></select
+        ><input name="color" type="color" [(ngModel)]="color" /><input
+          name="icon"
+          maxlength="4"
+          [(ngModel)]="icon"
+        />
+      </div>
+      <button class="btn primary">Adicionar</button>
+      @for (x of store.categories(); track x.id) {
+        <div class="toolbar">
+          <span>{{ x.icon }} {{ x.name }}</span>
+          <div class="actions">
+            <button
+              type="button"
+              class="btn secondary"
+              (click)="rename('categories', x.id, x.name)"
+            >
+              Editar</button
+            ><button
+              type="button"
+              class="btn secondary"
+              (click)="archive('categories', x.id, x.archived_at)"
+            >
+              {{ x.archived_at ? 'Reativar' : 'Arquivar' }}
+            </button>
+          </div>
+        </div>
+      }
+    </form>
+    <form class="card stack" (ngSubmit)="addAccount()">
+      <h2>Contas</h2>
+      <input name="account" [(ngModel)]="account" placeholder="Nome" />
+      <div class="form-grid">
+        <select name="type" [(ngModel)]="accountType">
+          <option value="checking">Conta corrente</option>
+          <option value="savings">Poupança</option>
+          <option value="cash">Dinheiro</option>
+          <option value="investment">Investimento</option></select
+        ><input
+          name="initial"
+          type="number"
+          step=".01"
+          [(ngModel)]="initial"
+          placeholder="Saldo inicial"
+        />
+      </div>
+      <button class="btn primary">Adicionar</button>
+      @for (x of store.accounts(); track x.id) {
+        <div class="toolbar">
+          <span
+            >{{ x.name }} · <strong>{{ fmt(store.accountBalance(x.id)) }}</strong></span
+          >
+          <div class="actions">
+            <button type="button" class="btn secondary" (click)="rename('accounts', x.id, x.name)">
+              Editar</button
+            ><button
+              type="button"
+              class="btn secondary"
+              (click)="archive('accounts', x.id, x.archived_at)"
+            >
+              {{ x.archived_at ? 'Reativar' : 'Arquivar' }}
+            </button>
+          </div>
+        </div>
+      }
+    </form>
+  </div>
+  <form class="card stack" (ngSubmit)="transfer()">
+    <h2>Transferência entre contas</h2>
+    <div class="form-grid">
+      <label
+        >De<select name="from" [(ngModel)]="from">
+          @for (x of store.activeAccounts(); track x.id) {
+            <option [value]="x.id">{{ x.name }}</option>
+          }
+        </select></label
+      ><label
+        >Para<select name="to" [(ngModel)]="to">
+          @for (x of store.activeAccounts(); track x.id) {
+            <option [value]="x.id">{{ x.name }}</option>
+          }
+        </select></label
+      ><label
+        >Valor<input
+          name="value"
+          type="number"
+          min=".01"
+          step=".01"
+          [(ngModel)]="transferAmount" /></label
+      ><label>Data<input name="date" type="date" [(ngModel)]="transferDate" /></label
+      ><label>Descrição<input name="description" [(ngModel)]="transferDescription" /></label>
+    </div>
+    <button class="btn primary">Transferir</button>
+  </form>
+  <div class="grid">
+    <article class="card">
+      <h2>Backup</h2>
+      <p class="muted">Exportação e restauração completa em JSON.</p>
+      <div class="actions">
+        <button class="btn secondary" (click)="exportJson()">Exportar backup</button
+        ><label class="btn secondary"
+          >Restaurar backup<input
+            type="file"
+            accept="application/json,.json"
+            hidden
+            (change)="restore($event)"
+        /></label>
+      </div>
+    </article>
+    <article class="card">
+      <div class="toolbar">
+        <h2>Diagnóstico</h2>
+        <button class="btn secondary" (click)="clearErrors()">Limpar</button>
+      </div>
+      @for (x of store.errors(); track x.id) {
+        <p>
+          <strong>{{ x.context }}</strong
+          ><br /><small>{{ x.message }}</small>
+        </p>
+      } @empty {
+        <p class="empty">Nenhum erro registrado.</p>
+      }
+    </article>
+  </div>
+</section>

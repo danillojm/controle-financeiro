@@ -1,0 +1,80 @@
+<section class="stack">
+  <div>
+    <h1>Histórico</h1>
+    <p class="muted">Pesquise e filtre todos os lançamentos.</p>
+  </div>
+  <div class="card form-grid">
+    <label>Mês<input type="month" [(ngModel)]="month" /></label
+    ><label>Buscar<input [(ngModel)]="search" placeholder="Descrição ou observação" /></label
+    ><label
+      >Tipo<select [(ngModel)]="kind">
+        <option value="">Todos</option>
+        <option value="expense">Despesa</option>
+        <option value="income">Receita</option>
+      </select></label
+    ><label
+      >Responsabilidade<select [(ngModel)]="responsibility">
+        <option value="">Todas</option>
+        <option value="own">Meu gasto</option>
+        <option value="receivable">Me deve</option>
+        <option value="payable">Eu devo</option>
+      </select></label
+    ><label
+      >Pessoa<select [(ngModel)]="person">
+        <option value="">Todas</option>
+        @for (x of store.activePeople(); track x.id) {
+          <option [value]="x.id">{{ x.name }}</option>
+        }
+      </select></label
+    ><label
+      >Categoria<select [(ngModel)]="category">
+        <option value="">Todas</option>
+        @for (x of store.categories(); track x.id) {
+          <option [value]="x.id">{{ x.name }}</option>
+        }
+      </select></label
+    ><label
+      >Status<select [(ngModel)]="status">
+        <option value="">Todos</option>
+        <option value="pending">Pendente</option>
+        <option value="partial">Parcial</option>
+        <option value="paid">Pago</option>
+      </select></label
+    ><label>Valor mínimo<input type="number" [(ngModel)]="min" /></label
+    ><label>Valor máximo<input type="number" [(ngModel)]="max" /></label
+    ><button class="btn secondary" (click)="clear()">Limpar filtros</button>
+  </div>
+  <div class="card table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Descrição</th>
+          <th>Responsabilidade</th>
+          <th>Valor</th>
+          <th>Mês</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (x of rows; track x.id) {
+          <tr>
+            <td>{{ x.purchase_date }}</td>
+            <td>{{ x.description }}</td>
+            <td>{{ x.responsibility }}</td>
+            <td>{{ fmt(x.installment_amount) }}</td>
+            <td>{{ x.invoice_month.slice(0, 7) }}</td>
+            <td class="actions">
+              <button class="btn secondary" (click)="edit(x)">Editar</button
+              ><button class="btn danger" (click)="remove(x)">Excluir</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty">Nenhum lançamento.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
