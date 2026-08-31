@@ -10,10 +10,15 @@ Aplicativo pessoal de finanças feito em HTML/CSS/JavaScript puro, preparado par
 - Compras parceladas distribuídas automaticamente pelos meses das faturas.
 - Responsabilidade do lançamento: meu gasto, outra pessoa me deve ou eu devo a outra pessoa.
 - Tela de Dívidas com saldos individuais, valores a receber e valores a pagar.
-- Marcar como pago ou reabrir uma dívida nos dois sentidos.
+- Pagamentos parciais, quitação completa, reabertura e histórico de pagamentos.
+- Compensação automática quando duas pessoas devem valores entre si.
+- Edição de uma parcela ou de toda a série.
+- Cálculo automático da fatura e vencimento pelo fechamento do cartão.
+- Alertas de vencimentos próximos e atrasados.
+- Orçamentos mensais por categoria e relatórios visuais.
 - Cadastro de pessoas e cartões.
-- Receita recorrente mensal até dezembro.
-- Histórico e exclusão de lançamentos.
+- Receitas recorrentes com duração configurável.
+- Histórico paginado, edição e exclusão de lançamentos.
 - Exportação CSV.
 - PWA: pode ser adicionada à Tela de Início no iPhone/iPad e instalada em navegadores compatíveis.
 - Segurança com Row Level Security no Supabase: cada conta só enxerga os próprios dados.
@@ -31,7 +36,12 @@ Aplicativo pessoal de finanças feito em HTML/CSS/JavaScript puro, preparado par
 
 ### Atualizar um projeto que já existe
 
-Execute o arquivo `supabase/migration_v2.sql` no SQL Editor. A migração adiciona o campo de responsabilidade sem apagar lançamentos; despesas antigas vinculadas a outra pessoa são classificadas como **Outra pessoa me deve** e as demais como **Meu gasto**.
+Execute, nesta ordem, os arquivos abaixo no SQL Editor:
+
+1. `supabase/migration_v2.sql` — adiciona as responsabilidades.
+2. `supabase/migration_v3.sql` — adiciona vencimentos, séries, pagamentos parciais, orçamentos e validações.
+
+As migrações preservam os lançamentos existentes. Pagamentos registrados na versão anterior são importados para o novo histórico de quitações.
 
 ### Confirmação de e-mail
 
@@ -69,13 +79,21 @@ No Mac, Chrome/Edge podem oferecer a opção de instalar o app. No Safari, o sit
 - `index.html` — interface.
 - `styles.css` — visual responsivo.
 - `app.js` — lógica do aplicativo.
+- `finance-core.js` — cálculos financeiros puros e testáveis.
 - `supabase-config.js` — URL e chave pública do Supabase.
 - `manifest.webmanifest` — configuração PWA.
 - `sw.js` — service worker/cache básico.
 - `icons/` — ícones do aplicativo.
 - `supabase/schema.sql` — banco, RLS e índices.
+- `supabase/migration_v2.sql` e `supabase/migration_v3.sql` — atualização de bancos existentes.
+- `tests/` — testes de cálculos e do contrato entre JavaScript e HTML.
 - `.nojekyll` — evita processamento desnecessário pelo GitHub Pages.
 
-## Próximas melhorias possíveis
+## Testes locais
 
-A estrutura já permite evoluir para importação da planilha antiga, fechamento automático pelo dia de fechamento de cada cartão, gráficos, notificações de cobrança, receitas recorrentes sem limite de dezembro e edição de lançamentos.
+Com Node.js instalado, execute:
+
+```bash
+node tests/finance-core.test.js
+node tests/dom-contract.test.js
+```

@@ -14,6 +14,8 @@
 </head>
 <body>
   <div id="app">
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+    <div id="loadingOverlay" class="loading-overlay hidden"><div class="spinner"></div><span>Carregando...</span></div>
     <section id="setupScreen" class="screen center-screen hidden">
       <div class="card auth-card">
         <div class="brand-mark">R$</div>
@@ -79,10 +81,16 @@
               <div id="categorySummary" class="list-empty">Sem gastos neste mês.</div>
             </article>
           </div>
+          <article id="dueAlertsCard" class="card hidden">
+            <div class="card-heading"><div class="card-title">Vencimentos</div><button id="enableNotificationsBtn" class="btn secondary" type="button">Ativar alertas</button></div>
+            <div id="dueAlerts"></div>
+          </article>
         </section>
 
         <section id="view-entry" class="view">
           <form id="transactionForm" class="card form-card">
+            <input id="editingTransactionId" type="hidden">
+            <div id="editingBanner" class="editing-banner hidden"><strong>Editando lançamento</strong><button id="cancelEditBtn" type="button" class="btn secondary">Cancelar</button></div>
             <div class="segmented">
               <button type="button" class="seg active" data-kind="expense">Despesa</button>
               <button type="button" class="seg" data-kind="income">Receita</button>
@@ -98,12 +106,14 @@
               <label id="cardField">Cartão<select id="card"></select></label>
               <label id="personField" class="hidden"><span id="personLabel">Quem me deve?</span><select id="person"></select></label>
               <label id="installmentsField">Parcelas<select id="installments"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>12</option><option>18</option><option>24</option></select></label>
-              <label id="invoiceMonthField">1ª fatura<input id="invoiceMonth" type="month"></label>
+              <label id="invoiceMonthField"><span id="invoiceMonthLabel">1ª fatura</span><input id="invoiceMonth" type="month"></label>
+              <label id="dueDateField">1º vencimento<input id="dueDate" type="date"><small id="invoiceAutoHint" class="field-hint"></small></label>
               <label class="full">Observação<textarea id="notes" rows="2" placeholder="Opcional"></textarea></label>
-              <label id="recurringField" class="check-row full hidden"><input id="recurringIncome" type="checkbox"> Repetir esta receita todos os meses até dezembro</label>
+              <label id="recurringField" class="hidden">Repetir receita por quantos meses?<input id="recurringMonths" type="number" min="1" max="120" value="1"></label>
+              <label id="updateSeriesField" class="check-row full hidden"><input id="updateSeries" type="checkbox"> <span id="updateSeriesLabel">Atualizar todas as parcelas deste lançamento</span></label>
             </div>
             <div id="installmentPreview" class="preview"></div>
-            <button class="btn primary large" type="submit">Salvar lançamento</button>
+            <button id="saveTransactionBtn" class="btn primary large" type="submit"><span class="button-label">Salvar lançamento</span><span class="button-spinner hidden"></span></button>
             <p id="transactionMessage" class="message"></p>
           </form>
         </section>
@@ -127,6 +137,13 @@
               <tbody id="invoiceTable"></tbody>
             </table>
           </div>
+          <div class="card table-wrap">
+            <div class="card-title table-title">Histórico de pagamentos</div>
+            <table>
+              <thead><tr><th>Data</th><th>Sentido</th><th>Pessoa</th><th>Lançamento</th><th>Valor</th><th>Observação</th><th></th></tr></thead>
+              <tbody id="settlementTable"></tbody>
+            </table>
+          </div>
         </section>
 
         <section id="view-history" class="view">
@@ -141,6 +158,20 @@
               <tbody id="historyTable"></tbody>
             </table>
           </div>
+          <div class="pagination"><button id="historyPrev" class="btn secondary">Anterior</button><span id="historyPageInfo">Página 1</span><button id="historyNext" class="btn secondary">Próxima</button></div>
+        </section>
+
+        <section id="view-reports" class="view">
+          <div class="filters card"><label>Mês<input id="reportMonth" type="month"></label></div>
+          <div class="two-col">
+            <article class="card"><div class="card-title">Evolução dos últimos 6 meses</div><div id="monthlyChart" class="bar-chart"></div></article>
+            <article class="card"><div class="card-title">Dívidas por pessoa</div><div id="peopleChart" class="bar-chart"></div></article>
+          </div>
+          <article class="card">
+            <div class="card-title">Orçamentos por categoria</div>
+            <form id="budgetForm" class="filters"><label>Categoria<select id="budgetCategory"></select></label><label>Limite mensal<input id="budgetAmount" type="number" min="0.01" step="0.01" required placeholder="0,00"></label><button class="btn primary">Salvar orçamento</button></form>
+            <div id="budgetList"></div>
+          </article>
         </section>
 
         <section id="view-registers" class="view">
@@ -176,13 +207,27 @@
         <button class="nav-btn" data-nav="entry"><span>＋</span>Lançar</button>
         <button class="nav-btn" data-nav="debts"><span>⇄</span>Dívidas</button>
         <button class="nav-btn" data-nav="history"><span>◷</span>Histórico</button>
+        <button class="nav-btn" data-nav="reports"><span>▥</span>Relatórios</button>
         <button class="nav-btn" data-nav="registers"><span>⚙</span>Cadastros</button>
       </nav>
     </section>
+
+    <dialog id="settlementDialog" class="modal">
+      <form id="settlementForm" method="dialog" class="stack">
+        <div class="modal-head"><h2 id="settlementTitle">Registrar pagamento</h2><button id="closeSettlementBtn" type="button" class="icon-btn">×</button></div>
+        <input id="settlementTransactionId" type="hidden">
+        <p id="settlementRemaining" class="muted"></p>
+        <label>Valor<input id="settlementAmount" type="number" min="0.01" step="0.01" required></label>
+        <label>Data<input id="settlementDate" type="date" required></label>
+        <label>Observação<textarea id="settlementNotes" rows="2" placeholder="Opcional"></textarea></label>
+        <button id="saveSettlementBtn" class="btn primary" type="submit">Confirmar pagamento</button>
+      </form>
+    </dialog>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
+  <script src="finance-core.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
