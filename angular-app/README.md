@@ -8,7 +8,7 @@ Reimplementação Angular 21 do aplicativo, usando a mesma instância e o mesmo 
 - `src/app/pages`: início, lançamentos, dívidas, histórico, relatórios e cadastros.
 - componentes standalone, rotas lazy-loaded, signals e PWA.
 
-Antes de usar, execute as migrations `migration_v2.sql`, `migration_v3.sql` e `migration_v4.sql` da pasta `../supabase`.
+Antes de usar, execute as migrations `migration_v2.sql`, `migration_v3.sql`, `migration_v4.sql` e `migration_v5.sql` da pasta `../supabase`.
 
 ## Desenvolvimento
 

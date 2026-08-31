@@ -1,0 +1,109 @@
+<section class="stack">
+  <div class="toolbar page-heading">
+    <div>
+      <span class="eyebrow">Meu Controle</span>
+      <h1>Visão geral</h1>
+      <p class="muted">Sua vida financeira em um só lugar.</p>
+    </div>
+    <input type="month" [(ngModel)]="month" />
+  </div>
+  <div class="kpis">
+    <div class="card kpi">
+      <span>Receitas</span><strong class="positive">{{ fmt(income) }}</strong
+      ><small>No mês</small>
+    </div>
+    <div class="card kpi">
+      <span>Despesas</span><strong class="negative">{{ fmt(expenses) }}</strong
+      ><small>Gastos pessoais</small>
+    </div>
+    <div class="card kpi featured">
+      <span>Saldo do mês</span><strong [class.negative]="balance < 0">{{ fmt(balance) }}</strong
+      ><small>Receitas menos despesas</small>
+    </div>
+    <div class="card kpi">
+      <span>A receber</span><strong>{{ fmt(receivable) }}</strong
+      ><small>De outras pessoas</small>
+    </div>
+    <div class="card kpi">
+      <span>A pagar</span><strong>{{ fmt(payable) }}</strong
+      ><small>Para outras pessoas</small>
+    </div>
+    <div class="card kpi">
+      <span>Saldo entre pessoas</span><strong [class.negative]="net < 0">{{ fmt(net) }}</strong
+      ><small>{{ net >= 0 ? 'Você tem a receber' : 'Você tem a pagar' }}</small>
+    </div>
+  </div>
+  <div class="grid dashboard-grid">
+    <article class="card">
+      <div class="toolbar">
+        <h2>Contas</h2>
+        <a routerLink="/cadastros" class="text-link">Gerenciar</a>
+      </div>
+      @for (x of store.accounts(); track x.id) {
+        <div class="list-row">
+          <span><i class="color-dot" [style.background]="x.color"></i>{{ x.name }}</span
+          ><strong [class.negative]="store.accountBalance(x.id) < 0">{{
+            fmt(store.accountBalance(x.id))
+          }}</strong>
+        </div>
+      } @empty {
+        <p class="empty">Cadastre uma conta para acompanhar seus saldos.</p>
+      }
+    </article>
+    <article class="card">
+      <div class="toolbar">
+        <h2>Saldos por pessoa</h2>
+        <a routerLink="/dividas" class="text-link">Ver dívidas</a>
+      </div>
+      @for (x of personBalances; track x.person.id) {
+        <div class="list-row">
+          <span
+            ><strong>{{ x.person.name }}</strong
+            ><small>Receber {{ fmt(x.receive) }} · Pagar {{ fmt(x.pay) }}</small></span
+          ><strong [class.negative]="x.net < 0">{{ fmt(x.net) }}</strong>
+        </div>
+      } @empty {
+        <p class="empty">Nenhum valor pendente entre pessoas.</p>
+      }
+    </article>
+  </div>
+  <div class="grid dashboard-grid">
+    <article class="card">
+      <div class="toolbar">
+        <h2>Próximos vencimentos</h2>
+        <span class="badge">7 dias</span>
+      </div>
+      @for (x of dueSoon; track x.id) {
+        <div class="list-row">
+          <span
+            ><strong>{{ x.description }}</strong
+            ><small>{{ dueLabel(x) }} · {{ x.cards?.name || 'Dívida' }}</small></span
+          ><strong class="negative">{{ fmt(store.remaining(x)) }}</strong>
+        </div>
+      } @empty {
+        <p class="empty">Nenhum vencimento próximo.</p>
+      }
+    </article>
+    <article class="card">
+      <div class="toolbar">
+        <h2>Atividade recente</h2>
+        <a routerLink="/historico" class="text-link">Ver histórico</a>
+      </div>
+      @for (x of recent; track x.id) {
+        <div class="list-row">
+          <span
+            ><strong>{{ x.description }}</strong
+            ><small
+              >{{ x.purchase_date }} · {{ x.kind === 'income' ? 'Receita' : 'Despesa' }}</small
+            ></span
+          ><strong [class.positive]="x.kind === 'income'" [class.negative]="x.kind === 'expense'"
+            >{{ x.kind === 'income' ? '+' : '-' }} {{ fmt(x.installment_amount) }}</strong
+          >
+        </div>
+      } @empty {
+        <p class="empty">Faça seu primeiro lançamento.</p>
+      }
+    </article>
+  </div>
+  <a routerLink="/lancamento" class="btn primary floating-action">＋ Novo lançamento</a>
+</section>

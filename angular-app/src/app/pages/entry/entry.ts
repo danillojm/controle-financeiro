@@ -2,7 +2,16 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FeedbackService } from '../../core/feedback.service';
 import { FinanceStore } from '../../core/finance-store.service';
-import { Kind, Responsibility, addMonths, monthStart, splitAmount, today } from '../../core/models';
+import {
+  Kind,
+  Responsibility,
+  addMonths,
+  dueDateFor,
+  invoiceMonthFor,
+  monthStart,
+  splitAmount,
+  today,
+} from '../../core/models';
 import { SupabaseService } from '../../core/supabase.service';
 @Component({ selector: 'app-entry', imports: [FormsModule], templateUrl: './entry.html' })
 export class EntryPage {
@@ -65,6 +74,12 @@ export class EntryPage {
   setKind(kind: Kind) {
     this.form.kind = kind;
     if (kind === 'income') this.form.responsibility = 'own';
+  }
+  updateInvoiceDates() {
+    if (!this.showCard) return;
+    const card = this.store.cards().find((item) => item.id === this.form.card_id);
+    this.form.invoice_month = invoiceMonthFor(this.form.purchase_date, card?.closing_day);
+    this.form.due_date = dueDateFor(this.form.invoice_month, card?.due_day);
   }
   get showAccount() {
     return (

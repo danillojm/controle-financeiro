@@ -107,6 +107,16 @@ export class RegistersPage {
     this.transferAmount = null;
     this.transferDescription = '';
   }
+  accountName(id: string) {
+    return this.store.accounts().find((item) => item.id === id)?.name || 'Conta removida';
+  }
+  async deleteTransfer(id: string) {
+    if (!confirm('Excluir esta transferência?')) return;
+    const { error } = await this.sb.from('transfers').delete().eq('id', id);
+    if (error) return this.feedback.show(error.message, 'error');
+    await this.store.load();
+    this.feedback.show('Transferência excluída.');
+  }
   exportJson() {
     const backup = {
       version: 4,

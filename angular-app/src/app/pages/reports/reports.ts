@@ -100,17 +100,15 @@ export class ReportsPage {
   async saveBudget() {
     if (!this.category || !this.amount)
       return this.feedback.show('Informe categoria e limite.', 'error');
-    const { error } = await this.sb
-      .from('budgets')
-      .upsert(
-        {
-          user_id: this.store.userId(),
-          category_id: this.category,
-          month: monthStart(this.month),
-          amount: this.amount,
-        },
-        { onConflict: 'user_id,category_id,month' },
-      );
+    const { error } = await this.sb.from('budgets').upsert(
+      {
+        user_id: this.store.userId(),
+        category_id: this.category,
+        month: monthStart(this.month),
+        amount: this.amount,
+      },
+      { onConflict: 'user_id,category_id,month' },
+    );
     if (error) return this.feedback.show(error.message, 'error');
     await this.store.load();
     this.feedback.show('Orçamento salvo.');

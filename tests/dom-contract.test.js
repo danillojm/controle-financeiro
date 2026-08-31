@@ -1,17 +1,22 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const path = require('node:path');
 
-const root = path.join(__dirname, '..');
-const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
-
-const htmlIds = [...html.matchAll(/id="([A-Za-z0-9_-]+)"/g)].map(match => match[1]);
-const duplicateIds = htmlIds.filter((id, index) => htmlIds.indexOf(id) !== index);
-assert.deepEqual([...new Set(duplicateIds)], [], 'Existem IDs duplicados no HTML');
-
-const referencedIds = [...app.matchAll(/\$\('#([A-Za-z0-9_-]+)'\)/g)].map(match => match[1]);
-const missingIds = [...new Set(referencedIds)].filter(id => !htmlIds.includes(id));
-assert.deepEqual(missingIds, [], 'app.js referencia IDs ausentes no HTML');
-
-console.log('contrato DOM: todos os testes passaram');
+const index = fs.readFileSync('index.html', 'utf8');
+const routes = fs.readFileSync('angular-app/src/app/app.routes.ts', 'utf8');
+assert.match(index, /<app-root>/, 'O build publicado não contém a raiz Angular');
+for (const route of ['inicio', 'lancamento', 'dividas', 'historico', 'relatorios', 'cadastros']) {
+  assert.match(routes, new RegExp(`path: '${route}'`), `Rota Angular ausente: ${route}`);
+}
+for (const file of [
+  'angular-app/src/app/app.html',
+  'angular-app/src/app/pages/dashboard/dashboard.html',
+  'angular-app/src/app/pages/entry/entry.html',
+  'angular-app/src/app/pages/debts/debts.html',
+  'angular-app/src/app/pages/history/history.html',
+  'angular-app/src/app/pages/registers/registers.html',
+]) {
+  const html = fs.readFileSync(file, 'utf8');
+  const ids = [...html.matchAll(/id="([A-Za-z0-9_-]+)"/g)].map((match) => match[1]);
+  assert.equal(ids.length, new Set(ids).size, `IDs duplicados em ${file}`);
+}
+console.log('contrato DOM Angular: todos os testes passaram');

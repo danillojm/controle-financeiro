@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FeedbackService } from '../../core/feedback.service';
 import { FinanceStore } from '../../core/finance-store.service';
-import { Transaction, currentMonth, money } from '../../core/models';
+import { Transaction, currentMonth, money, today } from '../../core/models';
 import { SupabaseService } from '../../core/supabase.service';
 @Component({ selector: 'app-history', imports: [FormsModule], templateUrl: './history.html' })
 export class HistoryPage {
@@ -44,6 +44,66 @@ export class HistoryPage {
           (!this.min || Number(x.installment_amount) >= this.min) &&
           (!this.max || Number(x.installment_amount) <= this.max),
       );
+  }
+  get incomeTotal() {
+    return this.rows
+      .filter((item) => item.kind === 'income')
+      .reduce((sum, item) => sum + Number(item.installment_amount), 0);
+  }
+  get expenseTotal() {
+    return this.rows
+      .filter((item) => item.kind === 'expense')
+      .reduce((sum, item) => sum + Number(item.installment_amount), 0);
+  }
+  responsibilityLabel(value: string) {
+    return value === 'receivable' ? 'Me deve' : value === 'payable' ? 'Eu devo' : 'Meu gasto';
+  }
+  categoryName(id?: string | null) {
+    return this.store.categories().find((item) => item.id === id)?.name || 'Sem categoria';
+  }
+  personName(id?: string | null) {
+    return this.store.people().find((item) => item.id === id)?.name || '—';
+  }
+  exportCsv() {
+    const header = [
+      'Data',
+      'Tipo',
+      'Descrição',
+      'Categoria',
+      'Responsabilidade',
+      'Pessoa',
+      'Forma',
+      'Cartão',
+      'Valor',
+      'Parcela',
+      'Mês',
+      'Observação',
+    ];
+    const values = this.rows.map((item) => [
+      item.purchase_date,
+      item.kind === 'income' ? 'Receita' : 'Despesa',
+      item.description,
+      this.categoryName(item.category_id),
+      this.responsibilityLabel(item.responsibility),
+      this.personName(item.person_id),
+      item.payment_method,
+      item.cards?.name || '',
+      item.installment_amount,
+      `${item.installment_number}/${item.installments_total}`,
+      item.invoice_month.slice(0, 7),
+      item.notes || '',
+    ]);
+    const quote = (value: unknown) => `"${String(value ?? '').replaceAll('"', '""')}"`;
+    const blob = new Blob(
+        ['\uFEFF' + [header, ...values].map((row) => row.map(quote).join(';')).join('\r\n')],
+        { type: 'text/csv;charset=utf-8' },
+      ),
+      link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `historico-${today()}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    this.feedback.show('Histórico exportado.');
   }
   clear() {
     this.month = currentMonth();

@@ -103,6 +103,18 @@ export const addMonths = (month: string, count: number) => {
     date = new Date(year, value - 1 + count, 1);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 };
+export const invoiceMonthFor = (purchaseDate: string, closingDay?: number | null) => {
+  const month = purchaseDate.slice(0, 7);
+  return closingDay && Number(purchaseDate.slice(8, 10)) >= closingDay
+    ? addMonths(month, 1)
+    : month;
+};
+export const dueDateFor = (month: string, dueDay?: number | null) => {
+  if (!month || !dueDay) return '';
+  const [year, value] = month.split('-').map(Number);
+  const lastDay = new Date(year, value, 0).getDate();
+  return `${month}-${String(Math.min(dueDay, lastDay)).padStart(2, '0')}`;
+};
 export const splitAmount = (amount: number, count: number) => {
   const cents = Math.round(amount * 100),
     base = Math.floor(cents / count),

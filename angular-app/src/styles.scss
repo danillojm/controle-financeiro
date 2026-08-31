@@ -223,6 +223,87 @@ td {
   text-align: center;
   color: var(--muted);
 }
+.page-heading h1 {
+  font-size: clamp(28px, 5vw, 42px);
+  letter-spacing: -0.04em;
+  margin: 3px 0;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--primary);
+}
+.kpi {
+  position: relative;
+  overflow: hidden;
+}
+.kpi span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+.kpi small {
+  display: block;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.kpi.featured {
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #115e59);
+  border: 0;
+}
+.kpi.featured span,
+.kpi.featured small {
+  color: #d1fae5;
+}
+.dashboard-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.list-row:last-child {
+  border-bottom: 0;
+}
+.list-row > span {
+  display: grid;
+  gap: 3px;
+}
+.list-row small {
+  color: var(--muted);
+}
+.color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}
+.text-link {
+  color: var(--primary);
+  font-weight: 750;
+  text-decoration: none;
+}
+.badge {
+  padding: 5px 9px;
+  background: #ecfdf3;
+  color: #067647;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.floating-action {
+  width: max-content;
+  text-decoration: none;
+  box-shadow: 0 8px 20px #0f766e42;
+}
 @media (max-width: 650px) {
   .form-grid {
     grid-template-columns: 1fr;
@@ -235,5 +316,14 @@ td {
   }
   .card {
     padding: 15px;
+  }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .kpi.featured {
+    grid-column: span 2;
   }
 }

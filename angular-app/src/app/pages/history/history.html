@@ -41,8 +41,23 @@
         <option value="paid">Pago</option>
       </select></label
     ><label>Valor mínimo<input type="number" [(ngModel)]="min" /></label
-    ><label>Valor máximo<input type="number" [(ngModel)]="max" /></label
-    ><button class="btn secondary" (click)="clear()">Limpar filtros</button>
+    ><label>Valor máximo<input type="number" [(ngModel)]="max" /></label>
+    <div class="actions">
+      <button class="btn secondary" (click)="clear()">Limpar filtros</button
+      ><button class="btn secondary" (click)="exportCsv()">Exportar CSV</button>
+    </div>
+  </div>
+  <div class="kpis">
+    <div class="card kpi">
+      <span>Resultados</span><strong>{{ rows.length }}</strong
+      ><small>lançamentos encontrados</small>
+    </div>
+    <div class="card kpi">
+      <span>Receitas filtradas</span><strong class="positive">{{ fmt(incomeTotal) }}</strong>
+    </div>
+    <div class="card kpi">
+      <span>Despesas filtradas</span><strong class="negative">{{ fmt(expenseTotal) }}</strong>
+    </div>
   </div>
   <div class="card table-wrap">
     <table>
@@ -50,7 +65,10 @@
         <tr>
           <th>Data</th>
           <th>Descrição</th>
+          <th>Categoria</th>
           <th>Responsabilidade</th>
+          <th>Pessoa</th>
+          <th>Forma</th>
           <th>Valor</th>
           <th>Mês</th>
           <th></th>
@@ -61,7 +79,17 @@
           <tr>
             <td>{{ x.purchase_date }}</td>
             <td>{{ x.description }}</td>
-            <td>{{ x.responsibility }}</td>
+            <td>{{ categoryName(x.category_id) }}</td>
+            <td>
+              <span class="badge">{{ responsibilityLabel(x.responsibility) }}</span>
+            </td>
+            <td>{{ personName(x.person_id) }}</td>
+            <td>
+              {{ x.payment_method }}
+              @if (x.cards?.name) {
+                · {{ x.cards?.name }}
+              }
+            </td>
             <td>{{ fmt(x.installment_amount) }}</td>
             <td>{{ x.invoice_month.slice(0, 7) }}</td>
             <td class="actions">
@@ -71,7 +99,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="6" class="empty">Nenhum lançamento.</td>
+            <td colspan="9" class="empty">Nenhum lançamento.</td>
           </tr>
         }
       </tbody>

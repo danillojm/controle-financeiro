@@ -70,17 +70,15 @@ export class DebtsPage {
   async settle() {
     if (!this.selected || this.amount <= 0 || this.amount > this.store.remaining(this.selected))
       return this.feedback.show('Informe um valor válido.', 'error');
-    const { error } = await this.sb
-      .from('settlements')
-      .insert({
-        user_id: this.store.userId(),
-        transaction_id: this.selected.id,
-        account_id: this.account || null,
-        direction: this.selected.responsibility === 'payable' ? 'paid' : 'received',
-        amount: this.amount,
-        settled_at: this.date,
-        notes: this.notes || null,
-      });
+    const { error } = await this.sb.from('settlements').insert({
+      user_id: this.store.userId(),
+      transaction_id: this.selected.id,
+      account_id: this.account || null,
+      direction: this.selected.responsibility === 'payable' ? 'paid' : 'received',
+      amount: this.amount,
+      settled_at: this.date,
+      notes: this.notes || null,
+    });
     if (error) return this.feedback.show(error.message, 'error');
     this.selected = undefined;
     await this.store.load();
@@ -100,16 +98,14 @@ export class DebtsPage {
   }
   async payInvoice() {
     if (!this.invoiceCard || this.invoiceAmount <= 0) return;
-    const { error } = await this.sb
-      .from('card_invoice_payments')
-      .insert({
-        user_id: this.store.userId(),
-        card_id: this.invoiceCard,
-        account_id: this.invoiceAccount || null,
-        invoice_month: monthStart(this.month),
-        amount: this.invoiceAmount,
-        paid_at: today(),
-      });
+    const { error } = await this.sb.from('card_invoice_payments').insert({
+      user_id: this.store.userId(),
+      card_id: this.invoiceCard,
+      account_id: this.invoiceAccount || null,
+      invoice_month: monthStart(this.month),
+      amount: this.invoiceAmount,
+      paid_at: today(),
+    });
     if (error) return this.feedback.show(error.message, 'error');
     this.invoiceCard = '';
     await this.store.load();
