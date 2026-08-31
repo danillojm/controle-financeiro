@@ -105,9 +105,7 @@ export class EntryPage {
     );
   }
   get isFixedDebt() {
-    return (
-      this.form.kind === 'expense' && this.form.responsibility !== 'own' && this.form.monthlyDebt
-    );
+    return this.form.kind === 'expense' && this.form.monthlyDebt;
   }
   async save() {
     if (!this.form.description.trim() || !this.form.amount || !this.form.purchase_date) {

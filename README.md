@@ -9,6 +9,7 @@ Os antigos arquivos `app.js`, `styles.css` e `finance-core.js` permanecem apenas
 - Login por e-mail e senha com Supabase Auth.
 - Dashboard mensal: receitas, gastos próprios, valores a receber, valores a pagar e saldo entre pessoas.
 - Cadastro rápido de despesas e receitas.
+- Gastos e dívidas de valor fixo mensal, como internet, aluguel e parcela da moto.
 - Compras parceladas distribuídas automaticamente pelos meses das faturas.
 - Responsabilidade do lançamento: meu gasto, outra pessoa me deve ou eu devo a outra pessoa.
 - Tela de Dívidas com saldos individuais, valores a receber e valores a pagar.

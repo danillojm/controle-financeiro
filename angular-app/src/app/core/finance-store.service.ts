@@ -10,6 +10,7 @@ import {
   Settlement,
   Transaction,
   Transfer,
+  today,
 } from './models';
 import { SupabaseService } from './supabase.service';
 @Injectable({ providedIn: 'root' })
@@ -114,22 +115,25 @@ export class FinanceStore {
   }
   accountBalance(id: string) {
     const a = this.accounts().find((x) => x.id === id);
+    const currentDate = today();
     let v = Number(a?.initial_balance || 0);
     this.transactions()
-      .filter((x) => x.account_id === id)
+      .filter((x) => x.account_id === id && x.purchase_date <= currentDate)
       .forEach(
         (x) =>
           (v += x.kind === 'income' ? Number(x.installment_amount) : -Number(x.installment_amount)),
       );
     this.settlements()
-      .filter((x) => x.account_id === id)
+      .filter((x) => x.account_id === id && x.settled_at <= currentDate)
       .forEach((x) => (v += x.direction === 'received' ? Number(x.amount) : -Number(x.amount)));
-    this.transfers().forEach((x) => {
-      if (x.from_account_id === id) v -= Number(x.amount);
-      if (x.to_account_id === id) v += Number(x.amount);
-    });
+    this.transfers()
+      .filter((x) => x.transfer_date <= currentDate)
+      .forEach((x) => {
+        if (x.from_account_id === id) v -= Number(x.amount);
+        if (x.to_account_id === id) v += Number(x.amount);
+      });
     this.invoicePayments()
-      .filter((x) => x.account_id === id)
+      .filter((x) => x.account_id === id && x.paid_at <= currentDate)
       .forEach((x) => (v -= Number(x.amount)));
     return v;
   }

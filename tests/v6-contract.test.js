@@ -12,8 +12,21 @@ assert.match(
   /when p_recurrence_type = 'monthly' then p_amount_total/,
   'Série mensal não mantém o valor integral',
 );
-assert.match(entry, /Array\(count\)\.fill\(this\.form\.amount\)/, 'Dívida mensal não repete o valor');
+assert.match(
+  entry,
+  /Array\(count\)\.fill\(this\.form\.amount\)/,
+  'Dívida mensal não repete o valor',
+);
 assert.match(entry, /await this\.store\.load\(\)/, 'Edição não recarrega as outras telas');
-assert.match(template, /Dívida de valor fixo mensal/, 'Opção mensal ausente no formulário');
+assert.match(
+  template,
+  /Gasto ou dívida de valor fixo mensal/,
+  'Opção mensal ausente no formulário',
+);
+assert.doesNotMatch(
+  entry,
+  /responsibility !== 'own' && this\.form\.monthlyDebt/,
+  'Gasto próprio não pode ser mensal',
+);
 
 console.log('contrato v6: dívida mensal e atualização consistente');

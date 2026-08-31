@@ -93,14 +93,16 @@
               }
             </select></label
           >
-          <label class="check-option full-field"
-            ><input type="checkbox" name="monthlyDebt" [(ngModel)]="form.monthlyDebt" />
-            <span
-              ><strong>Dívida de valor fixo mensal</strong
-              ><small>Repete o mesmo valor em todos os meses.</small></span
-            ></label
-          >
         }
+        <label class="check-option full-field"
+          ><input type="checkbox" name="monthlyDebt" [(ngModel)]="form.monthlyDebt" />
+          <span
+            ><strong>Gasto ou dívida de valor fixo mensal</strong
+            ><small
+              >Ideal para internet, aluguel, parcela da moto e outros valores recorrentes.</small
+            ></span
+          ></label
+        >
       }
       @if (showCard) {
         <label
