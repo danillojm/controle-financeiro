@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1788204868075,
+  "timestamp": 1788205314058,
   "index": "/controle-financeiro/index.html",
   "assetGroups": [
     {
@@ -22,7 +22,7 @@
         "/controle-financeiro/chunk-N6N6XMLY.js",
         "/controle-financeiro/chunk-QVKU5NJR.js",
         "/controle-financeiro/chunk-WIA6MARZ.js",
-        "/controle-financeiro/favicon.ico",
+        "/controle-financeiro/favicon.png",
         "/controle-financeiro/index.html",
         "/controle-financeiro/main-UJUQRK6N.js",
         "/controle-financeiro/manifest.webmanifest",
@@ -38,6 +38,7 @@
         "ignoreVary": true
       },
       "urls": [
+        "/controle-financeiro/icons/apple-touch-icon.png",
         "/controle-financeiro/icons/icon-128x128.png",
         "/controle-financeiro/icons/icon-144x144.png",
         "/controle-financeiro/icons/icon-152x152.png",
@@ -63,16 +64,17 @@
     "/controle-financeiro/chunk-N6N6XMLY.js": "0d3f653bc99d5b188f76f3a0b1ea230b71da65cd",
     "/controle-financeiro/chunk-QVKU5NJR.js": "370cd34e780e7608fb71385f9f8269ad1756c326",
     "/controle-financeiro/chunk-WIA6MARZ.js": "2f947a9b6a008f1388350c09492cd3c217c883c9",
-    "/controle-financeiro/favicon.ico": "9c39f434fe1261f68c5e3eefdf734630d99c5670",
-    "/controle-financeiro/icons/icon-128x128.png": "f912963bdc6d5a38d8f1dd0afbaab2ce8d657acb",
-    "/controle-financeiro/icons/icon-144x144.png": "b155fd5f2fd5d2ea7760721063003c4cd95fd783",
-    "/controle-financeiro/icons/icon-152x152.png": "eae6e0f0c8afb8aaae339e2a569b43e9238e5e6c",
-    "/controle-financeiro/icons/icon-192x192.png": "15c4180454633880d98674aa7394656196c91584",
-    "/controle-financeiro/icons/icon-384x384.png": "94a915751ef6c9282df9aea405ad679230631814",
-    "/controle-financeiro/icons/icon-512x512.png": "1de182f76f7329dfa8f9fcdd1fdcdd695bea6a99",
-    "/controle-financeiro/icons/icon-72x72.png": "aa88a6096bd973be7f6d7a5489bfa6bc2463f8c4",
-    "/controle-financeiro/icons/icon-96x96.png": "7fb8f59c30ce2ff12c700321a0b39e14b3dc8f95",
-    "/controle-financeiro/index.html": "0913c7ac96d1d74a7a2aae19a337bb53f3d6d4a8",
+    "/controle-financeiro/favicon.png": "203989916b738dd458e844b55cfddf69e5a7519b",
+    "/controle-financeiro/icons/apple-touch-icon.png": "79507a30a17a1b4a422f0b9bde796f6ceb557941",
+    "/controle-financeiro/icons/icon-128x128.png": "66b26a4cf54939da66374c1e979dcfef6370a74a",
+    "/controle-financeiro/icons/icon-144x144.png": "6ae72672818d16b5b503046ced5db8aa81ab3c55",
+    "/controle-financeiro/icons/icon-152x152.png": "f5e666090b113bb027769809a7468465684af7b3",
+    "/controle-financeiro/icons/icon-192x192.png": "410cee2dc3763c7f9a2668c09041e4618a6806d9",
+    "/controle-financeiro/icons/icon-384x384.png": "d8a8294556f80ab3b2ccdb860f52cdf56e59a511",
+    "/controle-financeiro/icons/icon-512x512.png": "16736d4d26bcbb0b15a1f9227adbb2883052b766",
+    "/controle-financeiro/icons/icon-72x72.png": "5962684e6694e5a826b5b70c36905f7f6824afc0",
+    "/controle-financeiro/icons/icon-96x96.png": "a7288e442ea1d19a04035d74738535cb4a343f63",
+    "/controle-financeiro/index.html": "5b1cc88d15022c04a5d77ba7b0656a4057f30bb2",
     "/controle-financeiro/main-UJUQRK6N.js": "352d3d4e47614bef51baf47c5cfbb46d863d463a",
     "/controle-financeiro/manifest.webmanifest": "4bc616275d9c8ceb3d97806e125ffa6eaad9db89",
     "/controle-financeiro/styles-D6H5RNDA.css": "ba0b93c14948eaf42c25e6db0adcb17e82c9a816"
