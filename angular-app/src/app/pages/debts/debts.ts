@@ -2,9 +2,29 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FeedbackService } from '../../core/feedback.service';
 import { FinanceStore } from '../../core/finance-store.service';
-import { Transaction, currentMonth, money, monthStart, today } from '../../core/models';
+import {
+  detectInvoiceColumns,
+  invoiceFingerprint,
+  normalizeInvoiceDescription,
+  parseInvoiceAmount,
+  parseInvoiceCsv,
+  parseInvoiceDate,
+} from '../../core/invoice-csv';
+import { Transaction, currentMonth, dueDateFor, money, monthStart, today } from '../../core/models';
 import { SupabaseService } from '../../core/supabase.service';
 import { CurrencyInputDirective } from '../../shared/currency-input.directive';
+
+interface InvoiceImportRow {
+  line: number;
+  selected: boolean;
+  date: string;
+  description: string;
+  amount: number;
+  error: string;
+  fingerprint: string;
+  duplicate: '' | 'imported' | 'possible';
+}
+
 @Component({
   selector: 'app-debts',
   imports: [FormsModule, CurrencyInputDirective],
@@ -24,6 +44,21 @@ export class DebtsPage {
   invoiceCard = '';
   invoiceAmount = 0;
   invoiceAccount = '';
+  importOpen = false;
+  importCard = '';
+  importMonth = currentMonth();
+  importCategory = '';
+  importFileName = '';
+  importHeaders: string[] = [];
+  importRecords: string[][] = [];
+  importDateColumn = -1;
+  importDescriptionColumn = -1;
+  importAmountColumn = -1;
+  importRows: InvoiceImportRow[] = [];
+  importError = '';
+  importing = false;
+  checkingDuplicates = false;
+  private duplicateRun = 0;
   fmt = money.format;
   get rows() {
     return this.store
@@ -64,6 +99,20 @@ export class DebtsPage {
         return { card, total, paid, remaining: Math.max(0, total - paid) };
       })
       .filter((x) => x.total || x.paid);
+  }
+  get importSelected() {
+    return this.importRows.filter(
+      (row) => row.selected && !row.error && row.duplicate !== 'imported',
+    );
+  }
+  get importTotal() {
+    return this.importSelected.reduce((sum, row) => sum + row.amount, 0);
+  }
+  get importInvalidCount() {
+    return this.importRows.filter((row) => row.error).length;
+  }
+  get importDuplicateCount() {
+    return this.importRows.filter((row) => row.duplicate).length;
   }
   open(x: Transaction) {
     this.selected = x;
@@ -126,5 +175,210 @@ export class DebtsPage {
     if (error) return this.feedback.show(error.message, 'error');
     await this.store.load();
     this.feedback.show('Fatura reaberta.');
+  }
+  openImporter() {
+    this.importOpen = !this.importOpen;
+    this.importMonth = this.month;
+    if (!this.importCard && this.store.activeCards().length === 1)
+      this.importCard = this.store.activeCards()[0].id;
+  }
+  async readInvoiceFile(event: Event) {
+    const input = event.target as HTMLInputElement,
+      file = input.files?.[0];
+    if (!file) return;
+    this.importError = '';
+    this.importFileName = file.name;
+    try {
+      const buffer = await file.arrayBuffer();
+      let text: string;
+      try {
+        text = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+      } catch {
+        text = new TextDecoder('windows-1252').decode(buffer);
+      }
+      const csv = parseInvoiceCsv(text),
+        mapping = detectInvoiceColumns(csv.headers);
+      this.importHeaders = csv.headers;
+      this.importRecords = csv.records;
+      this.importDateColumn = mapping.date;
+      this.importDescriptionColumn = mapping.description;
+      this.importAmountColumn = mapping.amount;
+      this.rebuildImportPreview();
+      if (Object.values(mapping).some((index) => index < 0))
+        this.importError = 'Confira abaixo quais colunas representam data, descrição e valor.';
+    } catch (error: any) {
+      this.importHeaders = [];
+      this.importRows = [];
+      this.importError = error.message;
+    } finally {
+      input.value = '';
+    }
+  }
+  rebuildImportPreview() {
+    if (
+      this.importDateColumn < 0 ||
+      this.importDescriptionColumn < 0 ||
+      this.importAmountColumn < 0
+    ) {
+      this.importRows = [];
+      return;
+    }
+    const parsed = this.importRecords.map((record, index) => ({
+        line: index + 2,
+        date: parseInvoiceDate(record[this.importDateColumn] || ''),
+        description: normalizeInvoiceDescription(record[this.importDescriptionColumn] || ''),
+        rawAmount: parseInvoiceAmount(record[this.importAmountColumn] || ''),
+      })),
+      amounts = parsed
+        .map((row) => row.rawAmount)
+        .filter((amount): amount is number => amount !== null && amount !== 0),
+      purchasesAreNegative = amounts.length > 0 && amounts.every((amount) => amount < 0);
+    this.importRows = parsed.map((row) => {
+      const amount =
+        row.rawAmount === null ? 0 : purchasesAreNegative ? Math.abs(row.rawAmount) : row.rawAmount;
+      let error = '';
+      if (!row.date) error = 'Data inválida';
+      else if (!row.description) error = 'Descrição vazia';
+      else if (amount <= 0) error = 'Estorno ou valor inválido';
+      return {
+        line: row.line,
+        selected: !error,
+        date: row.date,
+        description: row.description,
+        amount,
+        error,
+        fingerprint: '',
+        duplicate: '',
+      };
+    });
+    this.importError = '';
+    void this.refreshImportDuplicates();
+  }
+  async refreshImportDuplicates() {
+    const run = ++this.duplicateRun;
+    this.checkingDuplicates = true;
+    this.importRows.forEach((row) => {
+      row.fingerprint = '';
+      row.duplicate = '';
+      row.selected = !row.error;
+    });
+    if (!this.importCard) {
+      this.checkingDuplicates = false;
+      return;
+    }
+    const occurrences = new Map<string, number>();
+    for (const row of this.importRows.filter((item) => !item.error)) {
+      const key = `${row.date}|${normalizeInvoiceDescription(row.description).toLowerCase()}|${Math.round(row.amount * 100)}`,
+        occurrence = occurrences.get(key) || 0;
+      occurrences.set(key, occurrence + 1);
+      row.fingerprint = await invoiceFingerprint(
+        this.importCard,
+        this.importMonth,
+        row.date,
+        row.description,
+        row.amount,
+        occurrence,
+      );
+    }
+    if (run !== this.duplicateRun) return;
+    const imported = new Set(
+      this.store
+        .transactions()
+        .map((transaction) => transaction.import_fingerprint)
+        .filter((fingerprint): fingerprint is string => Boolean(fingerprint)),
+    );
+    for (const row of this.importRows.filter((item) => !item.error)) {
+      if (imported.has(row.fingerprint)) {
+        row.duplicate = 'imported';
+        row.selected = false;
+      } else {
+        const possible = this.store
+          .transactions()
+          .some(
+            (transaction) =>
+              transaction.card_id === this.importCard &&
+              transaction.invoice_month.slice(0, 7) === this.importMonth &&
+              transaction.purchase_date === row.date &&
+              normalizeInvoiceDescription(transaction.description).toLowerCase() ===
+                normalizeInvoiceDescription(row.description).toLowerCase() &&
+              Math.round(Number(transaction.installment_amount) * 100) ===
+                Math.round(row.amount * 100),
+          );
+        if (possible) {
+          row.duplicate = 'possible';
+          row.selected = false;
+        }
+      }
+    }
+    this.checkingDuplicates = false;
+  }
+  toggleImportRows(checked: boolean) {
+    this.importRows.forEach(
+      (row) => (row.selected = checked && !row.error && row.duplicate === ''),
+    );
+  }
+  async importInvoice() {
+    if (!this.importCard || !this.importMonth)
+      return this.feedback.show('Selecione o cartão e o mês da fatura.', 'error');
+    const selected = this.importSelected;
+    if (this.checkingDuplicates || selected.some((row) => !row.fingerprint))
+      return this.feedback.show('Aguarde a verificação de compras duplicadas.', 'error');
+    if (!selected.length)
+      return this.feedback.show('Selecione pelo menos uma compra válida.', 'error');
+    this.importing = true;
+    try {
+      const card = this.store.cards().find((item) => item.id === this.importCard),
+        rows = selected.map((row) => ({
+          user_id: this.store.userId(),
+          kind: 'expense',
+          description: row.description,
+          category_id: this.importCategory || null,
+          payment_method: 'Crédito',
+          card_id: this.importCard,
+          account_id: null,
+          person_id: null,
+          responsibility: 'own',
+          amount_total: row.amount,
+          installment_number: 1,
+          installments_total: 1,
+          installment_amount: row.amount,
+          purchase_date: row.date,
+          invoice_month: monthStart(this.importMonth),
+          due_date: dueDateFor(this.importMonth, card?.due_day) || null,
+          series_id: crypto.randomUUID(),
+          recurrence_type: 'installment',
+          reimbursement_status: null,
+          amount_received: 0,
+          notes: `Importado da fatura ${this.importFileName}`,
+          import_fingerprint: row.fingerprint,
+        }));
+      const { data, error } = await this.sb
+        .from('transactions')
+        .upsert(rows, { onConflict: 'user_id,import_fingerprint', ignoreDuplicates: true })
+        .select('id');
+      if (error) throw error;
+      const count = data?.length || 0;
+      await this.store.load();
+      this.month = this.importMonth;
+      this.importRows = [];
+      this.importHeaders = [];
+      this.importRecords = [];
+      this.importFileName = '';
+      this.importOpen = false;
+      navigator.vibrate?.(40);
+      this.feedback.show(
+        `${count} ${count === 1 ? 'compra importada' : 'compras importadas'} com sucesso.`,
+      );
+    } catch (error: any) {
+      const message = String(error.message || error);
+      this.feedback.show(
+        message.includes('import_fingerprint') || message.includes('schema cache')
+          ? 'Execute a migration_v7.sql no Supabase antes de importar a fatura.'
+          : message,
+        'error',
+      );
+    } finally {
+      this.importing = false;
+    }
   }
 }

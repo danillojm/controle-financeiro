@@ -115,6 +115,11 @@ begin
   end if;
 end $$;
 
+-- Importação de faturas (v7).
+alter table public.transactions add column if not exists import_fingerprint text;
+create unique index if not exists transactions_user_import_fingerprint_key
+  on public.transactions(user_id, import_fingerprint);
+
 update public.transactions
 set responsibility = 'own', reimbursement_status = null, amount_received = 0
 where responsibility in ('receivable','payable') and person_id is null;

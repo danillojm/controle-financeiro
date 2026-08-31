@@ -49,6 +49,7 @@ export interface Transaction {
   due_date?: string | null;
   series_id: string;
   recurrence_type?: 'installment' | 'monthly';
+  import_fingerprint?: string | null;
   reimbursement_status?: string | null;
   amount_received: number;
   notes?: string | null;

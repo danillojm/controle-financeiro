@@ -93,7 +93,194 @@
   }
 </section>
 <div class="card stack">
-  <h2>Faturas dos cartões</h2>
+  <div class="toolbar">
+    <div>
+      <h2>Faturas dos cartões</h2>
+      <p class="muted">Confira, importe e registre o pagamento das faturas.</p>
+    </div>
+    <button class="btn primary" (click)="openImporter()">
+      {{ importOpen ? 'Fechar importação' : 'Importar fatura CSV' }}
+    </button>
+  </div>
+  @if (importOpen) {
+    <form class="import-panel stack" (ngSubmit)="importInvoice()">
+      <div>
+        <h3>Importar compras da fatura</h3>
+        <p class="muted">
+          Baixe a fatura em CSV no aplicativo do banco. Você poderá revisar tudo antes de salvar.
+        </p>
+      </div>
+      <div class="form-grid">
+        <label
+          >Cartão<select
+            name="importCard"
+            [ngModel]="importCard"
+            (ngModelChange)="importCard = $event; refreshImportDuplicates()"
+            required
+          >
+            <option value="">Selecione o cartão</option>
+            @for (x of store.activeCards(); track x.id) {
+              <option [value]="x.id">{{ x.name }}</option>
+            }
+          </select></label
+        ><label
+          >Mês da fatura<input
+            type="month"
+            name="importMonth"
+            [(ngModel)]="importMonth"
+            (ngModelChange)="refreshImportDuplicates()"
+            required /></label
+        ><label
+          >Categoria para as compras<select name="importCategory" [(ngModel)]="importCategory">
+            <option value="">Sem categoria</option>
+            @for (x of store.activeCategories(); track x.id) {
+              @if (x.kind === 'expense' || x.kind === 'both') {
+                <option [value]="x.id">{{ x.icon }} {{ x.name }}</option>
+              }
+            }
+          </select></label
+        ><label class="file-field"
+          >Arquivo da fatura
+          <span class="file-picker">
+            {{ importFileName || 'Escolher arquivo CSV' }}
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              (change)="readInvoiceFile($event)"
+              hidden
+            /> </span
+        ></label>
+      </div>
+      @if (importHeaders.length) {
+        <div class="form-grid mapping-grid">
+          <label
+            >Coluna da data<select
+              name="dateColumn"
+              [(ngModel)]="importDateColumn"
+              (ngModelChange)="rebuildImportPreview()"
+            >
+              <option [ngValue]="-1">Selecione</option>
+              @for (header of importHeaders; track $index) {
+                <option [ngValue]="$index">{{ header }}</option>
+              }
+            </select></label
+          ><label
+            >Coluna da descrição<select
+              name="descriptionColumn"
+              [(ngModel)]="importDescriptionColumn"
+              (ngModelChange)="rebuildImportPreview()"
+            >
+              <option [ngValue]="-1">Selecione</option>
+              @for (header of importHeaders; track $index) {
+                <option [ngValue]="$index">{{ header }}</option>
+              }
+            </select></label
+          ><label
+            >Coluna do valor<select
+              name="amountColumn"
+              [(ngModel)]="importAmountColumn"
+              (ngModelChange)="rebuildImportPreview()"
+            >
+              <option [ngValue]="-1">Selecione</option>
+              @for (header of importHeaders; track $index) {
+                <option [ngValue]="$index">{{ header }}</option>
+              }
+            </select></label
+          >
+        </div>
+      }
+      @if (importError) {
+        <p class="negative">
+          <strong>{{ importError }}</strong>
+        </p>
+      }
+      @if (importRows.length) {
+        <div class="import-summary">
+          <span
+            ><strong>{{ importSelected.length }}</strong> selecionadas</span
+          >
+          <span
+            ><strong>{{ fmt(importTotal) }}</strong> total</span
+          >
+          @if (importDuplicateCount) {
+            <span
+              ><strong>{{ importDuplicateCount }}</strong> possíveis duplicidades</span
+            >
+          }
+          @if (importInvalidCount) {
+            <span
+              ><strong>{{ importInvalidCount }}</strong> linhas ignoradas</span
+            >
+          }
+          @if (checkingDuplicates) {
+            <span><strong>Verificando</strong> duplicidades...</span>
+          }
+        </div>
+        <div class="actions">
+          <button type="button" class="btn secondary" (click)="toggleImportRows(true)">
+            Selecionar válidas</button
+          ><button type="button" class="btn secondary" (click)="toggleImportRows(false)">
+            Desmarcar todas
+          </button>
+        </div>
+        <div class="table-wrap import-preview">
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Situação</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of importRows; track row.line) {
+                <tr [class.disabled-row]="row.error || row.duplicate === 'imported'">
+                  <td>
+                    <input
+                      class="row-check"
+                      type="checkbox"
+                      [(ngModel)]="row.selected"
+                      [ngModelOptions]="{ standalone: true }"
+                      [disabled]="!!row.error || row.duplicate === 'imported'"
+                    />
+                  </td>
+                  <td>{{ row.date || '—' }}</td>
+                  <td>{{ row.description || '—' }}</td>
+                  <td>{{ row.amount > 0 ? fmt(row.amount) : '—' }}</td>
+                  <td>
+                    @if (row.error) {
+                      <span class="badge warning">{{ row.error }}</span>
+                    } @else if (row.duplicate === 'imported') {
+                      <span class="badge warning">Já importada</span>
+                    } @else if (row.duplicate === 'possible') {
+                      <span class="badge warning">Possível duplicidade</span>
+                    } @else {
+                      <span class="badge">Pronta</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="muted">
+          Valores negativos em arquivos mistos são tratados como estornos e não são importados.
+          Compras marcadas como possível duplicidade permanecem desmarcadas, mas podem ser
+          selecionadas manualmente.
+        </p>
+        <div class="actions">
+          <button
+            class="btn primary"
+            [disabled]="importing || checkingDuplicates || !importSelected.length"
+          >
+            {{ importing ? 'Importando...' : 'Importar compras selecionadas' }}
+          </button>
+        </div>
+      }
+    </form>
+  }
   @for (x of invoices; track x.card.id) {
     <div class="toolbar">
       <span

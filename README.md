@@ -20,6 +20,7 @@ Os antigos arquivos `app.js`, `styles.css` e `finance-core.js` permanecem apenas
 - Alertas de vencimentos próximos e atrasados.
 - Orçamentos mensais por categoria e relatórios visuais.
 - Contas, saldos, transferências e pagamento de faturas de cartão.
+- Importação de faturas em CSV com prévia, mapeamento de colunas e bloqueio de duplicidades.
 - Categorias personalizáveis com cor, ícone, uso e arquivamento.
 - Pessoas, cartões, categorias e contas editáveis e arquiváveis.
 - Busca e filtros avançados no histórico.
@@ -54,6 +55,7 @@ Execute, nesta ordem, os arquivos abaixo no SQL Editor:
 3. `supabase/migration_v4.sql` — adiciona contas, transferências, faturas, arquivamento, preferências e diagnóstico.
 4. `supabase/migration_v5.sql` — corrige os gatilhos de contas, transferências, quitações e faturas.
 5. `supabase/migration_v6.sql` — adiciona dívidas mensais de valor fixo e atualização consistente das séries.
+6. `supabase/migration_v7.sql` — adiciona identificação segura das compras importadas de faturas.
 
 As migrações preservam os lançamentos existentes. Pagamentos registrados na versão anterior são importados para o novo histórico de quitações.
 
