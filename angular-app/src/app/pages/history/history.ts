@@ -5,7 +5,12 @@ import { FeedbackService } from '../../core/feedback.service';
 import { FinanceStore } from '../../core/finance-store.service';
 import { Transaction, currentMonth, money, today } from '../../core/models';
 import { SupabaseService } from '../../core/supabase.service';
-@Component({ selector: 'app-history', imports: [FormsModule], templateUrl: './history.html' })
+import { CurrencyInputDirective } from '../../shared/currency-input.directive';
+@Component({
+  selector: 'app-history',
+  imports: [FormsModule, CurrencyInputDirective],
+  templateUrl: './history.html',
+})
 export class HistoryPage {
   private sb = inject(SupabaseService).client;
   readonly store = inject(FinanceStore);

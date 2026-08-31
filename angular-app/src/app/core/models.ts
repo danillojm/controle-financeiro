@@ -95,6 +95,30 @@ export interface AppError {
   created_at: string;
 }
 export const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+export const currencyInput = new Intl.NumberFormat('pt-BR', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+export const parseBrazilianCurrency = (raw: string | number | null | undefined) => {
+  if (typeof raw === 'number') return Number.isFinite(raw) ? raw : null;
+  const value = String(raw ?? '')
+    .trim()
+    .replace(/R\$|\s/g, '');
+  if (!value) return null;
+  const negative = value.startsWith('-');
+  const unsigned = value.replace(/^-/, '').replace(/[^\d.,]/g, '');
+  let normalized: string;
+  if (unsigned.includes(',')) {
+    normalized = unsigned.replace(/\./g, '').replace(',', '.');
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(unsigned)) {
+    normalized = unsigned.replace(/\./g, '');
+  } else {
+    const parts = unsigned.split('.');
+    normalized = parts.length > 2 ? `${parts.slice(0, -1).join('')}.${parts.at(-1)}` : unsigned;
+  }
+  const parsed = Number(`${negative ? '-' : ''}${normalized}`);
+  return Number.isFinite(parsed) ? parsed : null;
+};
 export const today = () => new Date().toLocaleDateString('en-CA');
 export const currentMonth = () => today().slice(0, 7);
 export const monthStart = (month: string) => `${month.slice(0, 7)}-01`;

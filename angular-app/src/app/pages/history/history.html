@@ -40,8 +40,8 @@
         <option value="partial">Parcial</option>
         <option value="paid">Pago</option>
       </select></label
-    ><label>Valor mínimo<input type="number" [(ngModel)]="min" /></label
-    ><label>Valor máximo<input type="number" [(ngModel)]="max" /></label>
+    ><label>Valor mínimo<input appCurrency inputmode="decimal" [(ngModel)]="min" /></label
+    ><label>Valor máximo<input appCurrency inputmode="decimal" [(ngModel)]="max" /></label>
     <div class="actions">
       <button class="btn secondary" (click)="clear()">Limpar filtros</button
       ><button class="btn secondary" (click)="exportCsv()">Exportar CSV</button>

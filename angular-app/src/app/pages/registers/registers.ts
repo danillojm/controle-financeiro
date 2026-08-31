@@ -4,7 +4,12 @@ import { FeedbackService } from '../../core/feedback.service';
 import { FinanceStore } from '../../core/finance-store.service';
 import { money, today } from '../../core/models';
 import { SupabaseService } from '../../core/supabase.service';
-@Component({ selector: 'app-registers', imports: [FormsModule], templateUrl: './registers.html' })
+import { CurrencyInputDirective } from '../../shared/currency-input.directive';
+@Component({
+  selector: 'app-registers',
+  imports: [FormsModule, CurrencyInputDirective],
+  templateUrl: './registers.html',
+})
 export class RegistersPage {
   private sb = inject(SupabaseService).client;
   readonly store = inject(FinanceStore);

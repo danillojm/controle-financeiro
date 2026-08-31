@@ -120,8 +120,8 @@
           <option value="investment">Investimento</option></select
         ><input
           name="initial"
-          type="number"
-          step=".01"
+          appCurrency
+          inputmode="decimal"
           [(ngModel)]="initial"
           placeholder="Saldo inicial"
         />
@@ -165,9 +165,8 @@
       ><label
         >Valor<input
           name="value"
-          type="number"
-          min=".01"
-          step=".01"
+          appCurrency
+          inputmode="decimal"
           [(ngModel)]="transferAmount" /></label
       ><label>Data<input name="date" type="date" [(ngModel)]="transferDate" /></label
       ><label>Descrição<input name="description" [(ngModel)]="transferDescription" /></label>

@@ -72,12 +72,7 @@
       <p>{{ selected.description }} · restante {{ fmt(store.remaining(selected)) }}</p>
       <div class="form-grid">
         <label
-          >Valor<input
-            type="number"
-            name="amount"
-            min=".01"
-            step=".01"
-            [(ngModel)]="amount" /></label
+          >Valor<input name="amount" appCurrency inputmode="decimal" [(ngModel)]="amount" /></label
         ><label
           >Conta<select name="account" [(ngModel)]="account">
             <option value="">Não informar</option>
@@ -126,9 +121,8 @@
       <label
         >Valor<input
           name="invoiceAmount"
-          type="number"
-          min=".01"
-          step=".01"
+          appCurrency
+          inputmode="decimal"
           [(ngModel)]="invoiceAmount" /></label
       ><label
         >Conta<select name="invoiceAccount" [(ngModel)]="invoiceAccount">

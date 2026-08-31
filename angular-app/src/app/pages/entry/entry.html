@@ -42,9 +42,8 @@
       ><label
         >Valor<input
           name="amount"
-          type="number"
-          min="0.01"
-          step="0.01"
+          appCurrency
+          inputmode="decimal"
           [(ngModel)]="form.amount"
           required /></label
       ><label

@@ -4,9 +4,10 @@ import { FeedbackService } from '../../core/feedback.service';
 import { FinanceStore } from '../../core/finance-store.service';
 import { currentMonth, money, monthStart } from '../../core/models';
 import { SupabaseService } from '../../core/supabase.service';
+import { CurrencyInputDirective } from '../../shared/currency-input.directive';
 @Component({
   selector: 'app-reports',
-  imports: [FormsModule],
+  imports: [FormsModule, CurrencyInputDirective],
   template: `<section class="stack">
     <div class="toolbar">
       <div>
@@ -48,7 +49,7 @@ import { SupabaseService } from '../../core/supabase.service';
             }
           </select></label
         ><label
-          >Limite<input name="amount" type="number" min=".01" step=".01" [(ngModel)]="amount"
+          >Limite<input name="amount" appCurrency inputmode="decimal" [(ngModel)]="amount"
         /></label>
       </div>
       <button class="btn primary">Salvar orçamento</button>

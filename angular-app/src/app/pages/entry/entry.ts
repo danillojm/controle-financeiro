@@ -13,7 +13,12 @@ import {
   today,
 } from '../../core/models';
 import { SupabaseService } from '../../core/supabase.service';
-@Component({ selector: 'app-entry', imports: [FormsModule], templateUrl: './entry.html' })
+import { CurrencyInputDirective } from '../../shared/currency-input.directive';
+@Component({
+  selector: 'app-entry',
+  imports: [FormsModule, CurrencyInputDirective],
+  templateUrl: './entry.html',
+})
 export class EntryPage {
   private sb = inject(SupabaseService).client;
   readonly store = inject(FinanceStore);
