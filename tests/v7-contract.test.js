@@ -6,6 +6,11 @@ const parser = fs.readFileSync(
   "angular-app/src/app/core/invoice-csv.ts",
   "utf8",
 );
+const pdfParser = fs.readFileSync(
+  "angular-app/src/app/core/invoice-pdf.ts",
+  "utf8",
+);
+const angularConfig = fs.readFileSync("angular-app/angular.json", "utf8");
 const debts = fs.readFileSync(
   "angular-app/src/app/pages/debts/debts.ts",
   "utf8",
@@ -37,7 +42,23 @@ assert.match(
   /checkingDuplicates/,
   "Importação não aguarda a verificação de duplicidades",
 );
-assert.match(template, /Importar fatura CSV/, "Acesso à importação ausente");
+assert.match(template, /Importar fatura/, "Acesso à importação ausente");
+assert.match(template, /application\/pdf/, "Seletor não aceita faturas em PDF");
+assert.match(
+  pdfParser,
+  /import\('pdfjs-dist'\)/,
+  "Leitor de PDF não é carregado sob demanda",
+);
+assert.match(
+  pdfParser,
+  /parseInvoicePdfLines/,
+  "Conversão do PDF em compras ausente",
+);
+assert.match(
+  angularConfig,
+  /pdf\.worker\.min\.mjs/,
+  "Worker local do PDF ausente",
+);
 assert.match(
   template,
   /Possível duplicidade/,

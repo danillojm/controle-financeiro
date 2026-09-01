@@ -10,6 +10,7 @@ import {
   parseInvoiceCsv,
   parseInvoiceDate,
 } from '../../core/invoice-csv';
+import { extractInvoicePdf, parseInvoicePdfLines } from '../../core/invoice-pdf';
 import { Transaction, currentMonth, dueDateFor, money, monthStart, today } from '../../core/models';
 import { SupabaseService } from '../../core/supabase.service';
 import { CurrencyInputDirective } from '../../shared/currency-input.directive';
@@ -56,6 +57,10 @@ export class DebtsPage {
   importAmountColumn = -1;
   importRows: InvoiceImportRow[] = [];
   importError = '';
+  importNotice = '';
+  importFileType: 'csv' | 'pdf' | '' = '';
+  importPdfLines: string[] = [];
+  readingFile = false;
   importing = false;
   checkingDuplicates = false;
   private duplicateRun = 0;
@@ -187,32 +192,68 @@ export class DebtsPage {
       file = input.files?.[0];
     if (!file) return;
     this.importError = '';
+    this.importNotice = '';
     this.importFileName = file.name;
+    this.readingFile = true;
     try {
       const buffer = await file.arrayBuffer();
-      let text: string;
-      try {
-        text = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
-      } catch {
-        text = new TextDecoder('windows-1252').decode(buffer);
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        const pdf = await extractInvoicePdf(buffer, this.importMonth, () =>
+          prompt('Este PDF é protegido. Informe a senha da fatura:'),
+        );
+        this.importFileType = 'pdf';
+        this.importPdfLines = pdf.sourceLines;
+        this.setImportDocument(pdf.headers, pdf.records, { date: 0, description: 1, amount: 2 });
+        this.importNotice = `${pdf.records.length} compras encontradas em ${pdf.pages} ${pdf.pages === 1 ? 'página' : 'páginas'}. Revise a prévia antes de importar.`;
+      } else {
+        let text: string;
+        try {
+          text = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+        } catch {
+          text = new TextDecoder('windows-1252').decode(buffer);
+        }
+        const csv = parseInvoiceCsv(text),
+          mapping = detectInvoiceColumns(csv.headers);
+        this.importFileType = 'csv';
+        this.importPdfLines = [];
+        this.setImportDocument(csv.headers, csv.records, mapping);
+        if (Object.values(mapping).some((index) => index < 0))
+          this.importError = 'Confira abaixo quais colunas representam data, descrição e valor.';
       }
-      const csv = parseInvoiceCsv(text),
-        mapping = detectInvoiceColumns(csv.headers);
-      this.importHeaders = csv.headers;
-      this.importRecords = csv.records;
-      this.importDateColumn = mapping.date;
-      this.importDescriptionColumn = mapping.description;
-      this.importAmountColumn = mapping.amount;
-      this.rebuildImportPreview();
-      if (Object.values(mapping).some((index) => index < 0))
-        this.importError = 'Confira abaixo quais colunas representam data, descrição e valor.';
     } catch (error: any) {
       this.importHeaders = [];
       this.importRows = [];
-      this.importError = error.message;
+      this.importPdfLines = [];
+      const message = String(error.message || error);
+      this.importError = /password|senha/i.test(message)
+        ? 'Não foi possível abrir o PDF. Confira a senha informada.'
+        : message;
     } finally {
+      this.readingFile = false;
       input.value = '';
     }
+  }
+  private setImportDocument(
+    headers: string[],
+    records: string[][],
+    mapping: { date: number; description: number; amount: number },
+  ) {
+    this.importHeaders = headers;
+    this.importRecords = records;
+    this.importDateColumn = mapping.date;
+    this.importDescriptionColumn = mapping.description;
+    this.importAmountColumn = mapping.amount;
+    this.rebuildImportPreview();
+  }
+  updateImportMonth() {
+    if (this.importFileType === 'pdf' && this.importPdfLines.length) {
+      const records = parseInvoicePdfLines(this.importPdfLines, this.importMonth);
+      this.setImportDocument(['Data', 'Descrição', 'Valor'], records, {
+        date: 0,
+        description: 1,
+        amount: 2,
+      });
+    } else void this.refreshImportDuplicates();
   }
   rebuildImportPreview() {
     if (
@@ -364,6 +405,9 @@ export class DebtsPage {
       this.importHeaders = [];
       this.importRecords = [];
       this.importFileName = '';
+      this.importFileType = '';
+      this.importPdfLines = [];
+      this.importNotice = '';
       this.importOpen = false;
       navigator.vibrate?.(40);
       this.feedback.show(

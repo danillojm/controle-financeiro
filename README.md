@@ -20,7 +20,7 @@ Os antigos arquivos `app.js`, `styles.css` e `finance-core.js` permanecem apenas
 - Alertas de vencimentos próximos e atrasados.
 - Orçamentos mensais por categoria e relatórios visuais.
 - Contas, saldos, transferências e pagamento de faturas de cartão.
-- Importação de faturas em CSV com prévia, mapeamento de colunas e bloqueio de duplicidades.
+- Importação local de faturas em PDF ou CSV com prévia, mapeamento e bloqueio de duplicidades.
 - Categorias personalizáveis com cor, ícone, uso e arquivamento.
 - Pessoas, cartões, categorias e contas editáveis e arquiváveis.
 - Busca e filtros avançados no histórico.
@@ -34,6 +34,8 @@ Os antigos arquivos `app.js`, `styles.css` e `finance-core.js` permanecem apenas
 - Exportação CSV.
 - PWA: pode ser adicionada à Tela de Início no iPhone/iPad e instalada em navegadores compatíveis.
 - Segurança com Row Level Security no Supabase: cada conta só enxerga os próprios dados.
+
+Na tela **Dívidas > Faturas dos cartões**, o importador aceita CSV e PDF. O PDF é processado localmente e precisa conter texto selecionável; arquivos digitalizados como imagem são identificados e não são importados sem revisão/OCR.
 
 ## 1. Criar o Supabase
 

@@ -400,6 +400,12 @@ td {
   background: #fffaeb;
   color: #b54708;
 }
+.import-notice {
+  padding: 11px 13px;
+  border-radius: 11px;
+  background: #ecfdf3;
+  color: #067647;
+}
 @media (max-width: 650px) {
   .form-grid {
     grid-template-columns: 1fr;

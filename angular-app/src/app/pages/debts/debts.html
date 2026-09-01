@@ -99,15 +99,15 @@
       <p class="muted">Confira, importe e registre o pagamento das faturas.</p>
     </div>
     <button class="btn primary" (click)="openImporter()">
-      {{ importOpen ? 'Fechar importação' : 'Importar fatura CSV' }}
+      {{ importOpen ? 'Fechar importação' : 'Importar fatura' }}
     </button>
   </div>
   @if (importOpen) {
     <form class="import-panel stack" (ngSubmit)="importInvoice()">
       <div>
-        <h3>Importar compras da fatura</h3>
+        <h3>Importar compras da fatura em PDF ou CSV</h3>
         <p class="muted">
-          Baixe a fatura em CSV no aplicativo do banco. Você poderá revisar tudo antes de salvar.
+          O arquivo é processado somente neste aparelho. Você poderá revisar tudo antes de salvar.
         </p>
       </div>
       <div class="form-grid">
@@ -128,7 +128,7 @@
             type="month"
             name="importMonth"
             [(ngModel)]="importMonth"
-            (ngModelChange)="refreshImportDuplicates()"
+            (ngModelChange)="updateImportMonth()"
             required /></label
         ><label
           >Categoria para as compras<select name="importCategory" [(ngModel)]="importCategory">
@@ -142,16 +142,22 @@
         ><label class="file-field"
           >Arquivo da fatura
           <span class="file-picker">
-            {{ importFileName || 'Escolher arquivo CSV' }}
+            {{ readingFile ? 'Lendo a fatura...' : importFileName || 'Escolher PDF ou CSV' }}
             <input
               type="file"
-              accept=".csv,text/csv"
+              accept=".pdf,.csv,application/pdf,text/csv"
+              [disabled]="readingFile"
               (change)="readInvoiceFile($event)"
               hidden
             /> </span
         ></label>
       </div>
-      @if (importHeaders.length) {
+      @if (importNotice) {
+        <p class="import-notice">
+          <strong>{{ importNotice }}</strong>
+        </p>
+      }
+      @if (importHeaders.length && importFileType === 'csv') {
         <div class="form-grid mapping-grid">
           <label
             >Coluna da data<select
